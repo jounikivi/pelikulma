@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="fi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+    />
+    <title>MATO</title>
+
+    <link rel="stylesheet" href="./mato.css" />
+    <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml" />
+    <script src="./mato.js" defer></script>
+  </head>
+  <body>
+    <div id="app">
+      <div class="hud">
+        <div><small>PISTEET</small><b id="score">0</b></div>
+        <div class="r">
+          <small>ENNÄTYS <span id="best">0</span></small
+          ><b id="lvl">TASO 1</b>
+        </div>
+        <button class="ib" id="pause" aria-label="Tauko tai jatka">Ⅱ</button>
+      </div>
+      <div id="wrap">
+        <canvas id="cv" aria-label="Matopelin pelikenttä"></canvas>
+        <div id="ov">
+          <h1>MATO</h1>
+          <p id="msg">Pyyhkäise ohjataksesi. Kerää, kasva, selviydy.</p>
+          <div class="grid" id="modes">
+            <button class="chip on" data-m="classic">
+              CLASSIC<small>Perinteinen</small>
+            </button>
+            <button class="chip" data-m="arcade">
+              ARCADE<small>Viholliset + kyvyt</small>
+            </button>
+            <button class="chip" data-m="maze">
+              MAZE<small>Sokkelot</small>
+            </button>
+            <button class="chip" data-m="time">
+              TIME ATTACK<small>90 sekuntia</small>
+            </button>
+          </div>
+          <div class="row" id="diffs">
+            <button class="chip" data-d="easy">Helppo</button>
+            <button class="chip on" data-d="normal">Normaali</button>
+            <button class="chip" data-d="hard">Vaikea</button>
+          </div>
+          <div class="row">
+            <button class="chip on" id="snd">Äänet: päällä</button>
+            <button class="chip" id="wrp">Seinän läpi: pois</button>
+          </div>
+          <a
+            class="chip"
+            href="../../index.html"
+            style="
+              max-width: 310px;
+              width: 100%;
+              text-decoration: none;
+              display: block;
+            "
+            >‹ Pelivalikko</a
+          ><button class="go" id="play">Aloita peli</button>
+        </div>
+      </div>
+      <div id="en"><i id="eni"></i></div>
+      <div class="abil off" id="abil">
+        <button id="shield" disabled>🛡 Kilpi (40)</button>
+        <button id="slow" disabled>⏳ Hidastus (55)</button>
+      </div>
+    </div>
+  </body>
+</html>

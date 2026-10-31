@@ -1,0 +1,15 @@
+{
+  "name": "pelikulma",
+  "version": "0.1.0",
+  "private": true,
+  "description": "MATO ja LOISTE – selainpelejä puhelimelle ja tietokoneelle",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node scripts/serve.mjs",
+    "dev": "node scripts/serve.mjs",
+    "check": "node scripts/check.mjs"
+  }
+}

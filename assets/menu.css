@@ -1,0 +1,135 @@
+:root {
+  --neon: #3dffb0;
+  --cy: #4ad8ff;
+  --pink: #ff4f9a;
+}
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background: #070b14;
+  color: #e9f1ff;
+  font-family:
+    system-ui,
+    -apple-system,
+    Segoe UI,
+    sans-serif;
+}
+body {
+  background: radial-gradient(120% 70% at 50% 0, #16264a, #070b14);
+  padding: calc(env(safe-area-inset-top, 0px) + 28px) 18px
+    calc(env(safe-area-inset-bottom, 0px) + 28px);
+}
+main {
+  max-width: 520px;
+  margin: auto;
+}
+h1 {
+  margin: 0;
+  font-size: 40px;
+  font-weight: 900;
+  letter-spacing: -2px;
+  background: linear-gradient(90deg, var(--neon), var(--cy));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.sub {
+  margin: 6px 0 26px;
+  color: #8da2c4;
+  font-size: 14px;
+}
+a.card {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  margin-bottom: 16px;
+  text-decoration: none;
+  color: inherit;
+  height: 170px;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.4);
+  transition: transform 0.15s;
+}
+a.card:active {
+  transform: scale(0.97);
+}
+.art {
+  position: absolute;
+  inset: 0;
+}
+.shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    0deg,
+    rgba(7, 11, 20, 0.92) 10%,
+    rgba(7, 11, 20, 0) 70%
+  );
+}
+.info {
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  bottom: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+.info b {
+  font-size: 24px;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  display: block;
+}
+.info span {
+  font-size: 12px;
+  color: #b4c3dc;
+}
+.pill {
+  font-size: 12px;
+  font-weight: 800;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  white-space: nowrap;
+}
+.soon {
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 24px;
+  height: 90px;
+  display: grid;
+  place-items: center;
+  color: #6f84a8;
+  font-size: 13px;
+}
+.mato {
+  background: linear-gradient(135deg, #0b1424, #0a1f26);
+}
+.mato i {
+  position: absolute;
+  border-radius: 50%;
+}
+.loi {
+  background: linear-gradient(180deg, #0b0a24, #2a0f45);
+}
+.loi i {
+  position: absolute;
+  border-radius: 50%;
+}
+
+a.card:focus-visible {
+  outline: 3px solid var(--neon);
+  outline-offset: 4px;
+}
+@media (prefers-reduced-motion: reduce) {
+  a.card {
+    transition: none;
+  }
+}
