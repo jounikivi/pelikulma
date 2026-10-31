@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 470" shape-rendering="crispEdges">
+<defs><pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M32 0H0V32" fill="none" stroke="#34344d"/></pattern></defs>
+<path d="M0 365H640V470H0Z" fill="url(#grid)"/><path d="M0 365H640" stroke="#625175" stroke-width="2"/>
+<g fill="#ff6597"><path d="M404 73h80v10h22v16h16v18H372V99h14V83h18z"/><path d="M364 125h164v12H364zM364 145h164v12H364zM372 165h148v12H372zM388 185h116v12H388z"/></g>
+<g fill="#83749e"><path d="M112 76h6v6h-6zM545 64h5v5h-5zM584 259h6v6h-6zM62 214h4v4h-4zM495 301h4v4h-4z"/></g>
+<path d="M124 160h8v-12h8v12h12v8h-12v12h-8v-12h-12z" fill="#ffd34b"/>
+<path d="M535 208h6v-8h6v8h8v6h-8v8h-6v-8h-6z" fill="#56edcb"/>
+<path d="M168 432h290v10H168z" fill="#090c1b"/>
+<path d="M212 60h208v42h12v202l20 24v28h-20v76H212V356h-24v-28l24-24z" fill="#a87631"/>
+<path d="M190 60h208v42h12v202l20 24v28h-20v76H190V356h-24v-28l24-24z" fill="#ffd34b"/>
+<path d="M184 52h220v56H184z" fill="#f6efd6"/><path d="M192 60h204v40H192z" fill="#d9477c"/>
+<text x="294" y="87" fill="#fff2d8" text-anchor="middle" font-family="monospace" font-size="22" font-weight="bold" letter-spacing="4">PELIKULMA</text>
+<path d="M204 120h180v174H204z" fill="#aa782e"/><path d="M212 128h164v154H212z" fill="#111e2a"/><path d="M220 136h148v138H220z" fill="#132a31"/>
+<g stroke="#22413b" stroke-width="1"><path d="M220 160h148M220 184h148M220 208h148M220 232h148M244 136v138M268 136v138M292 136v138M316 136v138M340 136v138"/></g>
+<path d="M244 232v-48h24v24h72v24z" fill="#3ebd8b"/><path d="M244 184h24v24h72v16h-80v-24h-16z" fill="#67efad"/><path d="M332 208h8v8h-8z" fill="#102a27"/>
+<path d="M320 160h16v16h-16z" fill="#ff6597"/><path d="M324 156h8v4h-8z" fill="#56edcb"/>
+<g opacity=".12" stroke="#b8e8b4" stroke-width="2"><path d="M220 146h148M220 154h148M220 162h148M220 170h148M220 178h148M220 186h148M220 194h148M220 202h148M220 210h148M220 218h148M220 226h148M220 234h148M220 242h148M220 250h148M220 258h148M220 266h148"/></g>
+<path d="M190 304h220l20 24H166z" fill="#f7e49a"/><path d="M166 328h264v22H166z" fill="#d29a36"/>
+<path d="M211 308h48v8h-48z" fill="#111e2a"/><path d="M232 282h8v30h-8z" fill="#343246"/><path d="M224 274h24v16h-24z" fill="#ee6091"/>
+<path d="M326 310h20v10h-20z" fill="#d9477c"/><path d="M354 304h20v10h-20z" fill="#40b7a7"/>
+<path d="M200 360h200v62H200z" fill="#eebd4d"/><path d="M278 370h44v34h-44z" fill="#292839"/><path d="M294 378h12v4h-12z" fill="#f7efd6"/>
+<path d="M216 378h36v4h-36zM216 390h36v4h-36zM348 378h36v4h-36zM348 390h36v4h-36z" fill="#a87631"/>
+<path d="M88 378h16v-12h16v12h16v16h-16v12h-16v-12H88z" fill="#56edcb"/>
+<path d="M494 386h32v32h-32z" fill="#ee6091"/><path d="M502 394h16v16h-16z" fill="#f7b1b5"/>
+</svg>

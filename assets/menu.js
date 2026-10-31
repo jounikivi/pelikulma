@@ -10,10 +10,11 @@ function readRecord(key) {
 }
 
 function updateRecords() {
-  document.getElementById("bm").textContent =
-    "Ennätys " + readRecord("mato2-classic-normal");
+  document.getElementById("bm").textContent = readRecord(
+    "mato2-classic-normal",
+  ).toLocaleString("fi-FI");
   document.getElementById("bl").textContent =
-    "Ennätys " + readRecord("loiste-best");
+    readRecord("loiste-best").toLocaleString("fi-FI");
 }
 
 updateRecords();

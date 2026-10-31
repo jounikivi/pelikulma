@@ -6,133 +6,201 @@
       name="viewport"
       content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
-    <title>PELIKULMA</title>
-    <link rel="stylesheet" href="./assets/menu.css" />
-    <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml" />
+    <title>PELIKULMA — pieni oma pelisali</title>
     <meta
       name="description"
-      content="Pelikulma: MATO ja LOISTE. Pienet selainpelit puhelimelle ja tietokoneelle."
+      content="Retropelien fiilistä ja uusia omia minipelejä. Pelaa MATOa ja LOISTEtta ilmaiseksi suoraan selaimessa, puhelimella tai tabletilla."
     />
+    <meta name="theme-color" content="#151527" />
+    <link rel="stylesheet" href="./assets/menu.css" />
+    <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml" />
     <script src="./assets/menu.js" defer></script>
   </head>
   <body>
-    <main>
-      <p class="eyebrow">OMA PIENI PELIHETKI</p>
-      <h1>PELIKULMA</h1>
-      <p class="sub">
-        Valitse peli ja pelaa. Puhelimella, tabletilla tai tietokoneella.
-      </p>
-      <div class="game-grid">
-        <a class="card" href="./games/mato/index.html"
-          ><div class="art mato" aria-hidden="true">
-            <i
-              style="
-                left: 22%;
-                top: 38%;
-                width: 46%;
-                height: 20px;
-                border-radius: 12px;
-                background: linear-gradient(90deg, #2a9d8f, #3dffb0);
-                box-shadow: 0 0 22px #3dffb0;
-              "
-            ></i>
-            <i
-              style="
-                left: 22%;
-                top: 38%;
-                width: 20px;
-                height: 60px;
-                border-radius: 12px;
-                background: #2a9d8f;
-                box-shadow: 0 0 22px #3dffb055;
-              "
-            ></i>
-            <i
-              style="
-                right: 20%;
-                top: 30%;
-                width: 18px;
-                height: 18px;
-                background: #ff4f9a;
-                box-shadow: 0 0 20px #ff4f9a;
-              "
-            ></i>
-            <i
-              style="
-                right: 34%;
-                top: 62%;
-                width: 14px;
-                height: 14px;
-                background: #ffd36b;
-                box-shadow: 0 0 18px #ffd36b;
-              "
-            ></i>
+    <a class="skip-link" href="#pelit">Siirry peleihin</a>
+    <div class="site-wrap">
+      <header class="site-header">
+        <a class="brand" href="./index.html" aria-label="Pelikulma, etusivu"
+          ><svg class="brand-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 5h16v3h3v13H1V8h3z" fill="currentColor" />
+            <path
+              d="M7 10h3v3h3v3h-3v3H7v-3H4v-3h3zM16 11h3v3h-3zM19 16h3v3h-3z"
+              fill="#151527"
+            /></svg
+          ><span>PELIKULMA<small>OMA PIENI PELISALI</small></span></a
+        >
+        <nav aria-label="Päänavigaatio">
+          <a href="#pelit">Pelit <span aria-hidden="true">↙</span></a
+          ><a href="#pelikulmasta">Idea <span aria-hidden="true">↗</span></a>
+        </nav>
+      </header>
+      <main>
+        <section class="hero" aria-labelledby="hero-title">
+          <div class="hero-copy">
+            <p class="eyebrow">
+              <span class="pixel-dot" aria-hidden="true"></span> TERVETULOA
+              PELIKULMAAN
+            </p>
+            <h1 id="hero-title">
+              <span class="sr-only">PELIKULMA</span
+              ><img
+                src="./assets/retro/wordmark.svg"
+                alt=""
+                width="540"
+                height="90"
+                fetchpriority="high"
+              />
+            </h1>
+            <h2>Vanhan koulun fiilis.<br /><span>Uudet pienet pelit.</span></h2>
+            <p class="hero-description">
+              Retrosuosikkien omia versioita ja ihan uusia peli-ideoita. Lyhyitä
+              pelituokioita, vielä yksi yritys ja se ikioma ennätys.
+            </p>
+            <div class="hero-action">
+              <a class="pixel-button" href="#pelit"
+                >VALITSE PELI <span aria-hidden="true">↓</span></a
+              ><span class="free-note"
+                >EI KOLIKKOJA.<br />VAIN PELAAMISTA.</span
+              >
+            </div>
+            <p class="device-note">
+              <span aria-hidden="true">✦</span> Puhelin · Tabletti · Tietokone
+            </p>
           </div>
-          <div class="shade"></div>
-          <div class="info">
+          <div class="hero-art">
+            <div class="art-corner" aria-hidden="true">1UP</div>
+            <img
+              src="./assets/retro/arcade.svg"
+              alt="Keltainen pelihallikone, jonka ruudulla on pikselimato."
+              width="640"
+              height="470"
+            /><span class="art-caption" aria-hidden="true"
+              >VIELÄ YKSI YRITYS.</span
+            >
+          </div>
+        </section>
+        <div class="arcade-strip" aria-hidden="true">
+          <span>RETROA &amp; UUSIA IDEOITA</span><b>✦</b
+          ><span>PELAA SUORAAN SELAIMESSA</span><b>✦</b
+          ><span>VIELÄ YKSI YRITYS</span><b>✦</b>
+        </div>
+        <section class="games-section" id="pelit" aria-labelledby="games-title">
+          <div class="section-heading">
             <div>
-              <b>MATO</b><span>Kerää, kasva ja väistä. Neljä pelimuotoa.</span>
+              <p class="eyebrow">PELIVALIKKO / SELECT GAME</p>
+              <h2 id="games-title">Mitä tänään pelataan?</h2>
             </div>
-            <div class="card-action">
-              <span class="pill" id="bm">Ennätys 0</span
-              ><span class="play-label">Pelaa →</span>
-            </div>
-          </div></a
-        >
-        <a class="card" href="./games/loiste/index.html"
-          ><div class="art loi" aria-hidden="true">
-            <i
-              style="
-                left: 50%;
-                top: 22%;
-                width: 46px;
-                height: 46px;
-                background: radial-gradient(circle at 35% 35%, #9ff, #146);
-                box-shadow: 0 0 30px #4ad8ff88;
-              "
-            ></i>
-            <i
-              style="
-                left: 22%;
-                top: 56%;
-                width: 60px;
-                height: 60px;
-                background: radial-gradient(circle at 35% 35%, #f9c, #703);
-                box-shadow: 0 0 34px #ff4f9a88;
-              "
-            ></i>
-            <i
-              style="
-                left: 72%;
-                top: 58%;
-                width: 30px;
-                height: 30px;
-                background: radial-gradient(circle at 35% 35%, #fe9, #a60);
-                box-shadow: 0 0 24px #ffd36b88;
-              "
-            ></i>
-            <i
-              style="
-                left: 62%;
-                top: 34%;
-                width: 8px;
-                height: 8px;
-                background: #fff;
-                box-shadow: 0 0 14px #fff;
-              "
-            ></i>
+            <span class="game-count"
+              >02 PELIÄ <span aria-hidden="true">▦</span></span
+            >
           </div>
-          <div class="shade"></div>
-          <div class="info">
-            <div><b>LOISTE</b><span>Napauta, lennä, pysy valossa</span></div>
-            <div class="card-action">
-              <span class="pill" id="bl">Ennätys 0</span
-              ><span class="play-label">Pelaa →</span>
-            </div>
-          </div></a
-        >
-      </div>
-      <p class="local-note">Omat ennätyksesi tallentuvat tähän selaimeen.</p>
-    </main>
+          <div class="game-grid">
+            <article class="game-card snake-card">
+              <a
+                class="game-link"
+                href="./games/mato/index.html"
+                aria-labelledby="mato-title mato-play"
+                aria-describedby="mato-description mato-record"
+              >
+                <div class="game-art">
+                  <img
+                    src="./assets/retro/mato.svg"
+                    alt=""
+                    width="640"
+                    height="280"
+                  /><span class="cartridge-label">01 / RETROREMIX</span
+                  ><span class="art-number" aria-hidden="true">01</span>
+                </div>
+                <div class="game-info">
+                  <div class="game-title-row">
+                    <h3 id="mato-title">MATO</h3>
+                    <span class="genre">KLASSIKKO, OMA TWISTI</span>
+                  </div>
+                  <p id="mato-description">
+                    Tuttu mato, uudet mutkat. Kerää hedelmiä, väistä esteitä ja
+                    kokeile neljää pelimuotoa.
+                  </p>
+                  <div class="game-footer">
+                    <div class="record" id="mato-record">
+                      <span>OMA ENNÄTYS</span><b id="bm">0</b
+                      ><small>Perinteinen · Normaali</small>
+                    </div>
+                    <span class="play-button" id="mato-play"
+                      >PELAA <span aria-hidden="true">↗</span></span
+                    >
+                  </div>
+                </div>
+              </a>
+            </article>
+            <article class="game-card orbit-card">
+              <a
+                class="game-link"
+                href="./games/loiste/index.html"
+                aria-labelledby="loiste-title loiste-play"
+                aria-describedby="loiste-description loiste-record"
+              >
+                <div class="game-art">
+                  <img
+                    src="./assets/retro/loiste.svg"
+                    alt=""
+                    width="640"
+                    height="280"
+                  /><span class="cartridge-label">02 / OMA PELI</span
+                  ><span class="art-number" aria-hidden="true">02</span>
+                </div>
+                <div class="game-info">
+                  <div class="game-title-row">
+                    <h3 id="loiste-title">LOISTE</h3>
+                    <span class="genre">YKSI NAPAUTUS RIITTÄÄ</span>
+                  </div>
+                  <p id="loiste-description">
+                    Planeetalta toiselle, valoa kohti. Ajoita lähtö ja pysy
+                    nousevan pimeyden edellä.
+                  </p>
+                  <div class="game-footer">
+                    <div class="record" id="loiste-record">
+                      <span>OMA ENNÄTYS</span><b id="bl">0</b
+                      ><small>Kuinka pitkälle pääset?</small>
+                    </div>
+                    <span class="play-button" id="loiste-play"
+                      >PELAA <span aria-hidden="true">↗</span></span
+                    >
+                  </div>
+                </div>
+              </a>
+            </article>
+          </div>
+          <p class="save-note">
+            <span aria-hidden="true">▣</span> Ennätyksesi tallentuvat tähän
+            selaimeen. Sinun pelisi, sinun pisteesi.
+          </p>
+        </section>
+        <section class="about" id="pelikulmasta" aria-labelledby="about-title">
+          <div>
+            <p class="eyebrow">MIKÄ IHMEEN PELIKULMA?</p>
+            <h2 id="about-title">
+              Pieni pelisali.<br /><span>Paljon pelirakkautta.</span>
+            </h2>
+          </div>
+          <div class="about-copy">
+            <p>
+              Paikka omille pienille peleille. Osa lainaa ideansa
+              retroklassikoista, osa lähtee ihan omille kiertoradoilleen.
+              Yhteistä on helppo aloitus ja halu kokeilla vielä kerran.
+            </p>
+            <p class="about-footnote">
+              Kokoelma alkaa madosta ja loisteesta. Uusille kokeiluille on aina
+              tilaa.
+            </p>
+          </div>
+        </section>
+      </main>
+      <footer class="site-footer">
+        <span class="footer-brand"
+          >PELIKULMA <span aria-hidden="true">✦</span></span
+        ><span>TEHTY PELAAMISTA VARTEN.</span
+        ><a href="#hero-title">Takaisin ylös ↑</a>
+      </footer>
+    </div>
   </body>
 </html>
