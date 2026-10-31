@@ -29,6 +29,7 @@ export const DIFFICULTIES = {
 };
 export const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const touches = (a, b, r) => Math.hypot(a.x - b.x, a.y - b.y) < r;
+const flightStats = () => ({ targets: 0, downed: 0, hits: 0 });
 export function createGame(difficulty = "normal", seed = 731) {
   const g = {
     difficulty: Object.hasOwn(DIFFICULTIES, difficulty) ? difficulty : "normal",
@@ -40,6 +41,9 @@ export function createGame(difficulty = "normal", seed = 731) {
     wave: 0,
     nextWave: 2,
     bossSpawned: false,
+    bossWarning: 0,
+    stats: flightStats(),
+    debrief: null,
     formations: {},
     dropIndex: 0,
     fired: 0,
@@ -97,6 +101,7 @@ function damageEnemy(g, e, amount) {
     boss: e.type === "boss",
   });
   g.kills++;
+  if (e.type !== "boss") g.stats.downed++;
   g.charge = Math.min(100, g.charge + 10);
   award(
     g,
@@ -153,6 +158,7 @@ export function hurtPlayer(g) {
   const p = g.player;
   if (g.phase !== "play" || p.invincible > 0) return false;
   p.hp--;
+  g.stats.hits++;
   p.invincible = 1.6;
   g.effects.push({ type: "hit", x: p.x, y: p.y, life: 0.35 });
   if (p.hp <= 0) {
@@ -178,6 +184,7 @@ export function hurtPlayer(g) {
 function spawnWave(g) {
   const waveId = g.sector * 4 + g.wave;
   const count = 5 + Math.min(3, g.sector) + (g.wave % 2);
+  g.stats.targets += count;
   for (let i = 0; i < count; i++) {
     const type =
       g.wave % 3 === 2 && i % 2 === 0
@@ -316,6 +323,10 @@ export function nextSector(g) {
   g.wave = 0;
   g.nextWave = 2;
   g.bossSpawned = false;
+  g.bossWarning = 0;
+  g.stats = flightStats();
+  g.debrief = null;
+  g.effects = [];
   g.enemies = [];
   g.bullets = [];
   g.shots = [];
@@ -335,6 +346,7 @@ export function nextSector(g) {
 }
 export function collect(g, item) {
   const p = g.player;
+  const before = g.score;
   if (item.type === "rapid" || item.type === "spread") {
     if (p[item.type]) award(g, 200);
     else p[item.type] = true;
@@ -349,6 +361,19 @@ export function collect(g, item) {
     else award(g, 100);
   } else g.charge = Math.min(100, g.charge + 40);
   g.effects.push({ type: "pickup", x: item.x, y: item.y, life: 0.4 });
+  const labels = {
+    weapon: "LISÄTYKIT",
+    rapid: "PIKATULI",
+    spread: "HAJONTA",
+    wing: "SIIPIKONEET",
+    repair: "RUNKO KORJATTU",
+    energy: "PULSSIENERGIA",
+  };
+  g.effects.push({
+    type: "notice",
+    label: g.score > before ? `BONUS +${g.score - before}` : labels[item.type] || "VARUSTE",
+    life: 1.7,
+  });
 }
 export function step(g, dt) {
   if (g.phase !== "play" || !Number.isFinite(dt) || dt <= 0) return;
@@ -406,28 +431,36 @@ function tick(g, dt) {
     g.sectorTime > g.nextWave &&
     g.enemies.length === 0
   ) {
-    const hp = 160 + g.sector * 55;
-    g.enemies.push({
-      type: "boss",
-      x: 180,
-      y: -60,
-      baseX: 180,
-      hp,
-      maxHp: hp,
-      r: 37,
-      age: 0,
-      fire: 2,
-      flash: 0,
-      speed: 0,
-    });
-    g.bossSpawned = true;
+    if (g.bossWarning === 0) g.bossWarning = 1.8;
+    else g.bossWarning = Math.max(0.001, g.bossWarning - dt);
+    if (g.bossWarning <= 0.001) {
+      const hp = 160 + g.sector * 55;
+      g.enemies.push({
+        type: "boss",
+        x: 180,
+        y: -60,
+        baseX: 180,
+        hp,
+        maxHp: hp,
+        r: 37,
+        age: 0,
+        fire: 2,
+        flash: 0,
+        speed: 0,
+      });
+      g.bossSpawned = true;
+      g.bossWarning = 0;
+    }
   }
   for (const e of g.enemies) {
+    if (e.hp <= 0) continue;
     e.age += dt;
     e.flash = Math.max(0, e.flash - dt);
     if (e.type === "boss") {
       e.y = Math.min(92, e.y + 45 * dt);
       e.x = 180 + Math.sin(e.age * 0.65) * (90 + g.sector * 5);
+    } else if (e.returnWait > 0) {
+      e.returnWait = Math.max(0, e.returnWait - dt);
     } else {
       e.y += e.speed * dt;
       if (e.path === 1)
@@ -444,10 +477,17 @@ function tick(g, dt) {
         e.speed = -Math.abs(e.speed) * 1.1;
         e.baseX = W - e.baseX;
         e.x = e.baseX;
+        // The return lane stays aligned with its warning arrow.
+        e.path = 0;
+        e.returnWait = 0.9;
+        e.fire = 1.2;
       }
     }
-    e.fire -= dt;
-    if (e.fire <= 0 && e.y > 12 && e.y < H - 15) {
+    const canFire = e.y > 12 && e.y < H - 65 &&
+      (e.type !== "boss" || e.y >= 70) && !touches(p, e, 90);
+    if (canFire) e.fire -= dt;
+    else e.fire = Math.max(0.4, e.fire);
+    if (e.fire <= 0 && canFire) {
       shootEnemy(g, e);
       e.fire =
         (e.type === "boss" ? 0.9 : e.type === "tank" ? 1.7 : 2.2) *
@@ -495,7 +535,18 @@ function tick(g, dt) {
     return e.hp > 0 && !left;
   });
   if (bossDead && g.phase === "play") {
-    award(g, 1000 + p.hp * 100);
+    const rate = g.stats.targets ? Math.min(1, g.stats.downed / g.stats.targets) : 0;
+    const scale = DIFFICULTIES[g.difficulty].score;
+    const bonus = {
+      clear: Math.round((1000 + p.hp * 100) * scale),
+      targets: Math.round(Math.round(rate * 1000) * scale),
+      clean: Math.round((g.stats.hits === 0 ? 500 : 0) * scale),
+      rolls: Math.round(p.rolls * 100 * scale),
+    };
+    const total = Object.values(bonus).reduce((a, b) => a + b, 0);
+    g.score += total;
+    g.debrief = { ...g.stats, percent: Math.round(rate * 100), bonus, total,
+      seconds: Math.round(g.sectorTime) };
     g.phase = g.sector === SECTORS.length - 1 ? "win" : "clear";
     g.bullets = [];
   }

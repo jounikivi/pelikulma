@@ -128,3 +128,7 @@ Pelaaja lentää ruudun alaosassa. Normaali ja Haaste ovat yhden osuman lentoa, 
 W lisää tykkejä, T nopeuttaa tulta, H avaa hajonnan ja S tuo kaksi mukana ampuvaa siipikonetta. R korjaa Rento-tilan runkoa ja E lataa pulssia. Raskaiden koneiden tuhoaminen antaa aina lisävarusteen. Koko muodostelman tuhoamisesta saa pistebonuksen. Ohitetut kevyet koneet kaartavat kerran takaisin alhaalta.
 
 Muodostelmat ovat toistettavia ja opeteltavia. Valinnainen, tähän peliin tehty chiptune-taustamusiikki löytyy valikosta. Uudet tallennukset säilyttävät varusteet ja jäljellä olevat väistöt; aiemmat jatkopaikat muunnetaan uuteen versioon.
+
+Palaavista koneista näkyy ennakkonuoli alareunassa, vihollisten laukauksia ennakoi tähtäysrengas ja pomon saapumista oma varoitus. Vihollinen ei aloita tulitusta aivan pelaajan vierestä. Kentän jälkeen lentoraportti näyttää pudotukset, lentoajan sekä reitti-, pudotus-, osumattomuus- ja väistöbonukset. Vaikeustason pistekerroin koskee myös bonuksia.
+
+Ääni ja sormiohjaus -valikossa voi valita tarkan, normaalin tai nopean sormiohjauksen. Ohjaus on suhteellinen: voit tarttua kenttään tai alapuoliseen ohjausalueeseen mistä kohdasta tahansa. Sormen irrotus pysäyttää koneen, ja toinen sormi voi käyttää väistöä tai pulssia lentoa keskeyttämättä.

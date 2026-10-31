@@ -123,3 +123,15 @@ Selaimessa käynnistettiin kaikki kolme vaikeustasoa. Automaattinen tuli, ensimm
 Kaikki 30 testiä sekä 56 koodi- ja linkkitarkistusta läpäistiin. Uudet testit varmistavat kolme välittömästi suojaavaa väistöä, täyden seitsemän laukauksen varustuksen, palautuvat koneet, muodostelmabonuksen, raskaan koneen varustepudotuksen, yhden osuman koneet ja tallennusversion muutoksen.
 
 Selaimessa kokeiltiin väistö painikkeella ja välilyönnillä, musiikkikytkin, tauko ja uuden kampanjan käynnistys. Pienen 320 × 568 -näytön painikkeet mahtuivat näkyviin ja koon vaihtaminen tablettinäkymään avasi tauon. Näissä kokeissa ei havaittu konsolivirheitä.
+
+### Viimeistelyn tarkistus
+
+- Paluukone odottaa 0,9 sekuntia ruudun alapuolella ennen paluuta. Ennakkonuoli näyttää paluukohdan.
+- Pomon saapumisesta varoitetaan 1,8 sekuntia. Pomo ei ammu sisääntulon alussa eikä vihollinen alle 90 yksikön päästä pelaajasta. Ammunnan vapautuessa jäljellä on vähintään 0,4 sekunnin ennakointi.
+- Lentoraportin pudotusprosentti ja bonukset lasketaan kerran. Osuma poistaa puhtaan lennon bonuksen myös korjauksen jälkeen. Alueen vaihto nollaa aluekohtaiset tilastot.
+- Sormiohjauksen herkkyys säilyy latauksessa. Ensimmäinen sormi säilyttää ohjauksen, toisen sormen vapauttaminen ei katkaise sitä. Sormen irrotus, tauko ja koneen menetys poistavat vanhan ohjauskohteen.
+- Pienessä pystynäkymässä reittipaneeli ja alavihje väistyvät pelikentän tieltä. Kerätyn varusteen ilmoitus näkyy myös pelikentässä.
+
+Automaattitestit kattavat yllä olevat pelisäännöt sekä koko viiden alueen kampanjan haavoittumattomalla testipilotilla. Fyysisen laitteen kahden sormen ohjaus ja vaikeustasojen tasapaino vaativat edelleen pelaamista puhelimella; selaimen kuvaruutukoon vaihtelu ei korvaa sitä.
+
+Viimeistelyssä kaikki 35 testiä ja 56 koodi- ja linkkitarkistusta läpäistiin. Selaimessa tarkistettiin 320 × 568, 390 × 844, 667 × 375, 768 × 1024 ja 1024 × 768. Ohjaimet pysyivät näkyvissä ilman sivuttaista ylivuotoa. Aloitus, liu'utus, painikkeen ja välilyönnin väistö, pulssi, tauko, koonvaihdon tauotus, herkkyyden säilyminen ja alueen alun jatkopaikka kokeiltiin. Myös pomotaistelu ja pelin päättymisnäkymä näkyivät selaintestissä. Konsolissa ei havaittu virheitä. Lentoraportin pisteytys ja viiden alueen läpäisy tarkistettiin automaattisessa simulaatiossa.

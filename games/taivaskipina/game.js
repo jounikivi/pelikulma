@@ -22,8 +22,8 @@ let difficulty = "normal",
   sound = true,
   best = 0,
   saved = null,
-  startPoint = null,
   drag = null,
+  sensitivity = 1,
   music = false,
   beat = 0,
   musicClock = 0;
@@ -34,12 +34,15 @@ try {
   if (!Object.hasOwn(DIFFICULTIES, difficulty)) difficulty = "normal";
   sound = localStorage.getItem("taivaskipina-sound") !== "off";
   music = localStorage.getItem("taivaskipina-music") === "on";
+  const storedSensitivity = Number(localStorage.getItem("taivaskipina-sensitivity"));
+  if ([0.8, 1, 1.35].includes(storedSensitivity)) sensitivity = storedSensitivity;
   saved = JSON.parse(localStorage.getItem("taivaskipina-save") || "null");
   if (!restore(saved)) saved = null;
 } catch {}
 g = createGame(difficulty);
 $("sound").checked = sound;
 $("music").checked = music;
+$("sensitivity").value = String(sensitivity);
 function text(id, value) {
   if ($(id).textContent !== String(value)) $(id).textContent = value;
 }
@@ -60,10 +63,9 @@ function saveBest() {
   }
 }
 function savePoint() {
-  startPoint = checkpoint(g);
-  saved = startPoint;
+  saved = checkpoint(g);
   try {
-    localStorage.setItem("taivaskipina-save", JSON.stringify(startPoint));
+    localStorage.setItem("taivaskipina-save", JSON.stringify(saved));
   } catch {}
 }
 function clearPoint() {
@@ -138,9 +140,9 @@ function ui() {
     "weapon",
     "ASE " +
       ["", "I", "II", "III"][g.player.weapon] +
-      (g.player.rapid ? " · T+" : "") +
-      (g.player.spread ? " · H+" : "") +
-      (g.player.wingmen ? " · S" : ""),
+      (g.player.rapid ? " · PIKATULI" : "") +
+      (g.player.spread ? " · HAJONTA" : "") +
+      (g.player.wingmen ? " · SIIVET" : ""),
   );
   $("roll").disabled =
     screen !== "game" || g.player.rolls === 0 || g.player.rollTime > 0;
@@ -152,7 +154,10 @@ function ui() {
     $("boss-health").style.width =
       Math.max(0, (boss.hp / boss.maxHp) * 100) + "%";
   }
-  text("wave", boss ? "POMOTAISTELU" : `AALTO ${g.wave}/4`);
+  text("wave", boss ? "POMO" : g.bossWarning ? "VAROITUS" : `AALTO ${g.wave}/4`);
+  text("mission-name", SECTORS[g.sector].name);
+  $("mission-fill").style.width = (g.phase === "clear" || g.phase === "win"
+    ? 100 : boss ? 80 + (1 - boss.hp / boss.maxHp) * 20 : g.wave * 20) + "%";
   $("pause").disabled = screen !== "game";
   $("pulse").disabled = screen !== "game" || g.charge < 100;
   text(
@@ -163,22 +168,27 @@ function ui() {
   );
   $("energy-fill").style.width = g.charge + "%";
   $("energy").setAttribute("aria-valuenow", String(Math.floor(g.charge)));
+  const notice = g.effects.findLast((e) => e.type === "notice");
+  $("pickup-notice").hidden = !notice;
+  if (notice) text("pickup-notice", notice.label);
   text(
     "hint",
-    g.player.rollTime > 0
+    screen !== "game" ? "Automaattinen tuli · ohjaa liu'uttamalla." : notice ? notice.label : g.player.rollTime > 0
       ? "Väistö suojaa · lentoa saa ohjata."
       : g.player.invincible > 0
         ? "Suojattu hetken · ota hyvä asema."
         : "Säästä väistöjä tiukkaan paikkaan.",
   );
-  $("area-banner").hidden = g.sectorTime > 2.5;
-  text("area-banner", SECTORS[g.sector].name.toUpperCase());
+  $("area-banner").hidden = g.sectorTime > 2.5 && !g.bossWarning;
+  $("area-banner").classList.toggle("warning", g.bossWarning > 0);
+  text("area-banner", g.bossWarning ? "⚠ MYRSKYKONE LÄHESTYY" : SECTORS[g.sector].name.toUpperCase());
 }
 function show(kind, title, msg, button) {
   saveBest();
   screen = kind;
   keys.clear();
   drag = null;
+  aim(g, g.player.x, g.player.y);
   text("dialog-title", title);
   text("msg", msg);
   text("play", button);
@@ -187,6 +197,16 @@ function show(kind, title, msg, button) {
   $("result").hidden = ["menu", "pause"].includes(kind);
   text("result-score", g.score);
   text("result-best", best);
+  const debrief = g.debrief;
+  $("debrief").hidden = !debrief || !["clear", "win"].includes(kind);
+  if (debrief) {
+    text("debrief-rank", debrief.percent === 100 && debrief.hits === 0 ? "ÄSSÄLENTO" : debrief.percent >= 75 ? "TAITOLENTO" : "REITTI AVATTU");
+    text("debrief-targets", `${debrief.downed}/${debrief.targets} · ${debrief.percent} %`);
+    text("debrief-time", `${Math.floor(debrief.seconds / 60)}:${String(debrief.seconds % 60).padStart(2, "0")}`);
+    for (const key of ["clear", "targets", "clean", "rolls"])
+      text("bonus-" + key, `+${debrief.bonus[key]}`);
+    text("bonus-total", `+${debrief.total}`);
+  }
   $("restart").hidden = kind !== "pause";
   $("continue").hidden = kind !== "menu" || !saved;
   if (saved)
@@ -208,6 +228,8 @@ function hide() {
   ui();
 }
 function start() {
+  beat = 0;
+  musicClock = 0;
   g = createGame(difficulty);
   readBest();
   savePoint();
@@ -221,7 +243,6 @@ function resumeSaved() {
   difficulty = g.difficulty;
   choices();
   readBest();
-  startPoint = saved;
   hide();
   beep(520);
 }
@@ -249,6 +270,9 @@ function evasiveRoll() {
     rumble();
     ui();
   }
+}
+function focusFlight() {
+  if (screen === "game") cv.focus({ preventScroll: true });
 }
 const melody = [
   64, 67, 71, 74, 71, 67, 62, 66, 69, 74, 69, 66, 60, 64, 67, 72, 67, 64, 62,
@@ -301,6 +325,9 @@ const TANK = [
   "vrrssrrv",
   "vvvvvvvv",
   "..v..v..",
+];
+const WEAVER = [
+  "p......p", "pp.qq.pp", ".ppqqpp.", "ppprrppp", "..prrp..", "...pp...",
 ];
 function sprite(pattern, x, y, size, colors, upward = false) {
   ctx.save();
@@ -357,13 +384,15 @@ function draw() {
       x = (i * 71) % W;
     ctx.fillRect(x, y, 12, 2);
   }
+  ctx.globalAlpha = 0.6;
   for (let i = 0; i < 6; i++)
     island(
-      ((i * 133 + 40) % 390) - 30,
+      i % 2 ? W - 45 + (i % 3) * 8 : -55 + (i % 3) * 8,
       ((i * 173 + g.scroll * 0.55) % 1000) - 170,
       0.8 + (i % 3) * 0.4,
       area.land,
     );
+  ctx.globalAlpha = 1;
   ctx.fillStyle = "#dde1c51b";
   for (let i = 0; i < 5; i++) {
     const x = (i * 149 + 10) % W,
@@ -372,6 +401,8 @@ function draw() {
     ctx.fillRect(x + 12, y - 7, 32, 28);
   }
   for (const item of g.pickups) {
+    ctx.fillStyle = "#102430";
+    ctx.fillRect(item.x - 12, item.y - 12, 24, 24);
     ctx.fillStyle = {
       weapon: "#f4d477",
       rapid: "#f4ab91",
@@ -398,6 +429,23 @@ function draw() {
     );
   }
   for (const e of g.enemies) {
+    if (e.returnWait > 0 || (e.pass === 1 && e.y > H - 25)) {
+      const x = clampToField(e.x);
+      ctx.fillStyle = "#152a34";
+      ctx.fillRect(x - 14, H - 26, 28, 24);
+      ctx.fillStyle = "#ffd89b";
+      ctx.beginPath(); ctx.moveTo(x, H - 23); ctx.lineTo(x - 7, H - 14);
+      ctx.lineTo(x + 7, H - 14); ctx.fill();
+      ctx.font = "bold 8px monospace"; ctx.textAlign = "center";
+      ctx.fillText("!", x, H - 4);
+    }
+    if (e.fire < 0.4 && e.fire > 0 && e.y > 12 && e.y < H - 65) {
+      ctx.strokeStyle = "#ffc78e"; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(e.x, e.y, e.r + 5, 0, Math.PI * 2); ctx.stroke();
+      ctx.fillStyle = "#ffe4b1"; ctx.fillRect(e.x - 2, e.y + e.r + 5, 4, 5);
+    }
+    ctx.fillStyle = "#071a2566";
+    ctx.fillRect(e.x - e.r + 5, e.y + 8, e.r * 2, e.type === "boss" ? 28 : 12);
     if (e.type === "boss") {
       ctx.fillStyle =
         e.flash > 0
@@ -406,6 +454,14 @@ function draw() {
       const x = Math.round(e.x),
         y = Math.round(e.y);
       ctx.fillRect(x - 40, y - 8, 80, 20);
+      if (g.sector % 2) {
+        ctx.fillRect(x - 46, y - 24, 12, 48);
+        ctx.fillRect(x + 34, y - 24, 12, 48);
+      }
+      if (g.sector >= 2) {
+        ctx.fillRect(x - 20, y - 32, 10, 18);
+        ctx.fillRect(x + 10, y - 32, 10, 18);
+      }
       ctx.fillRect(x - 30, y - 20, 60, 36);
       ctx.fillStyle = "#e4b18d";
       ctx.fillRect(x - 14, y - 28, 28, 60);
@@ -419,7 +475,7 @@ function draw() {
       ctx.fillRect(x - 6, y + 17, 12, 7);
     } else
       sprite(
-        e.type === "tank" ? TANK : SCOUT,
+        e.type === "tank" ? TANK : e.type === "weaver" ? WEAVER : SCOUT,
         e.x,
         e.y,
         e.type === "tank" ? 4 : 3,
@@ -445,10 +501,12 @@ function draw() {
     ctx.fillRect(s.x - 1, s.y + 4, 3, 4);
   }
   for (const b of g.bullets) {
-    ctx.fillStyle = "#663943";
-    ctx.fillRect(b.x - 4, b.y - 4, 8, 8);
-    ctx.fillStyle = "#ffcb8f";
-    ctx.fillRect(b.x - 2, b.y - 3, 4, 6);
+    ctx.fillStyle = "#101b2b";
+    ctx.fillRect(b.x - b.r - 2, b.y - b.r - 2, b.r * 2 + 4, b.r * 2 + 4);
+    ctx.fillStyle = "#ffad83";
+    ctx.fillRect(b.x - b.r, b.y - b.r, b.r * 2, b.r * 2);
+    ctx.fillStyle = "#fff1c7";
+    ctx.fillRect(b.x - 1, b.y - 1, 2, 2);
   }
   for (const e of g.effects) {
     if (e.type === "pulse") {
@@ -468,7 +526,7 @@ function draw() {
       ctx.font = "bold 11px monospace";
       ctx.textAlign = "center";
       ctx.fillText(`MUODOSTELMA +${e.points}`, 180, 280);
-    } else if (!reduced && e.type !== "roll") {
+    } else if (!reduced && !["roll", "notice"].includes(e.type)) {
       ctx.fillStyle = e.type === "pickup" ? "#bcebc7" : "#ffe0a0";
       const t = 1 - e.life / 0.5;
       for (let i = 0; i < 8; i++) {
@@ -516,6 +574,10 @@ function draw() {
     f: "#ed9c6e",
   });
   ctx.restore();
+  if (g.player.fire > (g.player.rapid ? 0.08 : 0.16)) {
+    ctx.fillStyle = "#fff1ad";
+    ctx.fillRect(g.player.x - 2, g.player.y - 21, 4, 5);
+  }
   ctx.globalAlpha = 1;
   ctx.fillStyle = "#fff";
   ctx.fillRect(g.player.x - 2, g.player.y - 2, 4, 4);
@@ -524,6 +586,7 @@ function draw() {
     ctx.strokeRect(g.player.x - 18, g.player.y - 18, 36, 36);
   }
 }
+function clampToField(x) { return Math.max(16, Math.min(W - 16, x)); }
 function frame(now) {
   const dt = Math.min(0.04, (now - (last || now)) / 1000);
   last = now;
@@ -546,6 +609,7 @@ function frame(now) {
       oldFired = g.fired;
     step(g, dt);
     if (g.player.lives < oldLives || g.player.hp < oldHp) {
+      if (g.player.lives < oldLives) drag = null;
       beep(140, 0.2);
       rumble();
     } else if (g.player.weapon > oldWeapon) beep(900, 0.12);
@@ -597,8 +661,12 @@ $("play").onclick = () => {
 $("continue").onclick = resumeSaved;
 $("restart").onclick = start;
 $("pause").onclick = pause;
-$("pulse").onclick = firePulse;
-$("roll").onclick = evasiveRoll;
+$("pulse").onclick = () => { firePulse(); focusFlight(); };
+$("roll").onclick = () => { evasiveRoll(); focusFlight(); };
+$("sensitivity").onchange = () => {
+  sensitivity = Number($("sensitivity").value);
+  try { localStorage.setItem("taivaskipina-sensitivity", String(sensitivity)); } catch {}
+};
 $("music").onchange = () => {
   music = $("music").checked;
   try {
@@ -620,16 +688,17 @@ document.querySelectorAll("[data-d]").forEach(
 );
 for (const element of [cv, $("touchpad")]) {
   element.addEventListener("pointerdown", (e) => {
-    if (screen !== "game") return;
+    if (screen !== "game" || drag) return;
     e.preventDefault();
     element.setPointerCapture(e.pointerId);
+    cv.focus({ preventScroll: true });
     drag = {
       id: e.pointerId,
       x: e.clientX,
       y: e.clientY,
-      px: g.player.tx,
-      py: g.player.ty,
-      scale: W / cv.getBoundingClientRect().width,
+      px: g.player.x,
+      py: g.player.y,
+      scale: sensitivity * W / cv.getBoundingClientRect().width,
     };
   });
   element.addEventListener("pointermove", (e) => {
@@ -641,7 +710,11 @@ for (const element of [cv, $("touchpad")]) {
       );
   });
   for (const type of ["pointerup", "pointercancel", "lostpointercapture"])
-    element.addEventListener(type, () => (drag = null));
+    element.addEventListener(type, (e) => {
+      if (drag?.id !== e.pointerId) return;
+      drag = null;
+      aim(g, g.player.x, g.player.y);
+    });
 }
 const directions = {
   ArrowLeft: "left",

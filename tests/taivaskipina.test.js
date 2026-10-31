@@ -255,3 +255,79 @@ test("heavy aircraft drop equipment and only complete formations earn the bonus"
     assert.equal(g.score, escaped ? 200 : 500);
   }
 });
+
+test("returning planes wait below the field before re-entering", () => {
+  const g = createGame();
+  step(g, 0.25);
+  g.wave = 4; g.bossSpawned = true;
+  const e = { type: "scout", x: 80, baseX: 80, y: 589, hp: 2, r: 12,
+    pass: 0, speed: 90, age: 0, fire: 0, flash: 0 };
+  g.enemies = [e];
+  step(g, 0.01);
+  assert.equal(e.y, 588);
+  assert.ok(e.returnWait > 0.88 && e.returnWait <= 0.9);
+  step(g, 0.25); step(g, 0.25);
+  assert.equal(e.y, 588);
+  step(g, 0.25); step(g, 0.25);
+  assert.ok(e.y < 588);
+});
+
+test("enemy fire respects arrival and close-range safety", () => {
+  for (const [type, y, expected] of [["scout", 410, 0], ["boss", 20, 0], ["scout", 150, 1]]) {
+    const g = createGame();
+    g.wave = 4; g.bossSpawned = true;
+    g.enemies = [{ type, x: 180, y, baseX: 180, hp: 20, maxHp: 20,
+      r: 12, age: 0, fire: 0, flash: 0, speed: 0 }];
+    step(g, 0.01);
+    assert.equal(g.bullets.length, expected);
+    if (type === "scout" && y === 410) {
+      g.enemies[0].y = 200;
+      step(g, 0.2);
+      assert.equal(g.bullets.length, 0);
+      step(g, 0.25);
+      assert.equal(g.bullets.length, 1);
+    }
+  }
+});
+
+test("boss arrival gives a warning before creating a live target", () => {
+  const g = createGame();
+  g.wave = 4; g.nextWave = 0;
+  step(g, 0.1);
+  assert.ok(g.bossWarning > 0);
+  assert.equal(g.bossSpawned, false);
+  for (let i = 0; i < 8; i++) step(g, 0.25);
+  assert.equal(g.bossSpawned, true);
+  assert.equal(g.bossWarning, 0);
+  assert.equal(g.enemies.filter(e => e.type === "boss").length, 1);
+});
+
+test("debrief awards bonuses once, scales difficulty and resets per sector", () => {
+  for (const difficulty of ["normal", "hard"]) {
+    const g = createGame(difficulty);
+    g.wave = 4; g.bossSpawned = true;
+    g.stats = { targets: 20, downed: 15, hits: 0 };
+    g.enemies = [{ type: "boss", x: 180, y: 100, hp: 0, age: 0 }];
+    step(g, 0.01);
+    assert.equal(g.phase, "clear");
+    assert.equal(g.debrief.percent, 75);
+    assert.equal(g.debrief.total, difficulty === "hard" ? 3445 : 2650);
+    const score = g.score;
+    step(g, 0.25);
+    assert.equal(g.score, score);
+    nextSector(g);
+    assert.deepEqual(g.stats, { targets: 0, downed: 0, hits: 0 });
+    assert.equal(g.debrief, null);
+  }
+});
+
+test("taking a hit removes the clean-flight bonus even after a repair", () => {
+  const g = createGame("easy");
+  g.player.invincible = 0;
+  hurtPlayer(g);
+  collect(g, { type: "repair", x: 180, y: 460 });
+  g.enemies = [{ type: "boss", x: 180, y: 100, hp: 0, age: 0 }];
+  step(g, 0.01);
+  assert.equal(g.debrief.hits, 1);
+  assert.equal(g.debrief.bonus.clean, 0);
+});

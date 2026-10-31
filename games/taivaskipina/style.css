@@ -90,8 +90,58 @@ canvas {
   max-width: 460px;
   gap: 6px;
 }
+.mission {
+  padding: 7px 10px;
+  border: 1px solid #587b79;
+  background: #172d38;
+}
+.mission > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: center;
+}
+.mission small {
+  font-size: 8px;
+  color: #b2c7c9;
+  letter-spacing: 1px;
+}
+.mission b {
+  font-size: 11px;
+  color: #f6dfaa;
+}
+.mission-track {
+  height: 4px;
+  margin-top: 6px;
+  background: #38505a;
+}
+.mission-track i {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: #9dd9bd;
+}
+#area-banner.warning {
+  background: #412e34ed;
+  color: #ffdaad;
+  font-size: 13px;
+  letter-spacing: 1px;
+}
+#pickup-notice {
+  position: absolute;
+  bottom: 14px;
+  left: 8px;
+  right: 8px;
+  padding: 8px;
+  background: #102d39ed;
+  border: 1px solid #9dd9bd;
+  color: #fff1b6;
+  font-size: 10px;
+  text-align: center;
+  pointer-events: none;
+}
 #touchpad {
-  height: 48px;
+  height: 60px;
   min-height: 48px;
   display: flex;
   align-items: center;
@@ -112,6 +162,73 @@ canvas {
   font-size: 9px;
   color: #d9e1ca;
   letter-spacing: 1px;
+  gap: 8px;
+  min-height: 22px;
+  align-items: center;
+}
+#weapon {
+  line-height: 1.5;
+}
+#wave {
+  white-space: nowrap;
+}
+.debrief {
+  border: 1px solid #587b79;
+  padding: 12px;
+  background: #142b35;
+}
+.debrief h2 {
+  margin: 0 0 12px;
+  color: #b9e6c6;
+  font-size: 15px;
+  letter-spacing: 2px;
+}
+.flight-report {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 10px;
+  color: #b2c7c9;
+}
+.flight-report b {
+  display: block;
+  color: #fff1c6;
+  font-size: 14px;
+  margin-top: 5px;
+}
+.debrief dl {
+  margin: 14px 0 0;
+  font-size: 11px;
+}
+.debrief dl div {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 5px 0;
+}
+.debrief dd {
+  margin: 0;
+  color: #ffe1a1;
+  font-variant-numeric: tabular-nums;
+}
+.debrief .bonus-total {
+  margin-top: 6px;
+  padding-top: 10px;
+  border-top: 1px solid #587b79;
+  font-weight: bold;
+}
+#sensitivity {
+  min-height: 48px;
+  background: #132c36;
+  border: 1px solid #849985;
+  color: #ffe1a1;
+  font: inherit;
+  padding: 8px;
+  border-radius: 3px;
+}
+#sensitivity:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
 }
 #pulse {
   font-family: inherit;
@@ -205,6 +322,13 @@ canvas {
 .sheet .help {
   padding-bottom: 12px;
 }
+.flight-settings {
+  padding-bottom: 8px;
+}
+.sheet .instructions {
+  padding-bottom: 12px;
+  padding-left: 18px;
+}
 .sheet .result {
   border-radius: 3px;
 }
@@ -227,6 +351,9 @@ canvas {
   }
 }
 @media (max-height: 400px) and (orientation: landscape) {
+  .mission {
+    padding: 5px 8px;
+  }
   .controls {
     gap: 6px;
   }
@@ -235,6 +362,14 @@ canvas {
   }
   .hint {
     height: 30px;
+  }
+}
+@media (max-height: 650px) and (orientation: portrait) {
+  #touchpad {
+    height: 48px;
+  }
+  .mission, .hint {
+    display: none;
   }
 }
 @media (max-width: 350px) {

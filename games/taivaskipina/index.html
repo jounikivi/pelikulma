@@ -34,7 +34,7 @@
       <div class="stage" id="stage">
         <div id="flight">
           <div class="flight-hud">
-            <span id="sector">1 / 5</span><span id="health">RUNKO 5/5</span
+            <span id="sector">1 / 5</span><span id="health">RUNKO 1/1</span
             ><span id="reserves">3 KONETTA</span>
           </div>
           <canvas
@@ -49,9 +49,14 @@
             <div><i id="boss-health"></i></div>
           </div>
           <div id="area-banner">SMARAGDISALMI</div>
+          <div id="pickup-notice" aria-hidden="true" hidden></div>
         </div>
       </div>
       <div class="controls">
+        <div class="mission">
+          <div><small>LENTOREITTI</small><b id="mission-name">Smaragdisalmi</b></div>
+          <div class="mission-track" aria-hidden="true"><i id="mission-fill"></i></div>
+        </div>
         <div
           id="touchpad"
           role="group"
@@ -111,7 +116,7 @@
             </div>
           </fieldset>
         </div>
-        <ol id="instructions" class="instructions">
+        <details id="instructions"><summary>Näin lennät</summary><ol class="instructions">
           <li>
             Liu'uta konetta kentällä tai alareunan ohjausalueella. Kone ampuu
             itse.
@@ -124,11 +129,22 @@
             Kolme väistöä aluetta kohti suojaavat osumilta. Pulssi torjuu
             lähiluodit. Kolme konetta, viisi aluetta ja viisi pomoa.
           </li>
-        </ol>
+        </ol></details>
         <div class="result" id="result" hidden>
           <div><small>Pisteet</small><b id="result-score">0</b></div>
           <div><small>Oma ennätys</small><b id="result-best">0</b></div>
         </div>
+        <section id="debrief" class="debrief" aria-label="Alueen lentoraportti" hidden>
+          <h2 id="debrief-rank">REITTI AVATTU</h2>
+          <div class="flight-report"><span>Pudotukset <b id="debrief-targets"></b></span><span>Lentoaika <b id="debrief-time"></b></span></div>
+          <dl>
+            <div><dt>Reitti avattu</dt><dd id="bonus-clear"></dd></div>
+            <div><dt>Pudotusbonus</dt><dd id="bonus-targets"></dd></div>
+            <div><dt>Lento ilman osumia</dt><dd id="bonus-clean"></dd></div>
+            <div><dt>Säästetyt väistöt</dt><dd id="bonus-rolls"></dd></div>
+            <div class="bonus-total"><dt>Aluebonus yhteensä</dt><dd id="bonus-total"></dd></div>
+          </dl>
+        </section>
         <div class="sheet-actions">
           <button class="primary" id="play">Aloita lento</button
           ><button id="continue" hidden>Jatka tallennettua lentoa</button
@@ -137,12 +153,17 @@
         <p class="save-info" id="save-info">
           Jatkopaikka tallentuu jokaisen alueen alkuun tässä selaimessa.
         </p>
+        <details><summary>Ääni ja sormiohjaus</summary><div class="flight-settings">
         <label class="switch"
           >Äänet ja värinä<input type="checkbox" id="sound" checked
         /></label>
         <label class="switch"
           >Oma chiptune-taustamusiikki<input type="checkbox" id="music"
         /></label>
+        <label class="switch" for="sensitivity">Sormiohjauksen herkkyys
+          <select id="sensitivity"><option value="0.8">Tarkka</option><option value="1" selected>Normaali</option><option value="1.35">Nopea</option></select>
+        </label>
+        </div></details>
         <details>
           <summary>Näppäimet ja kerättävät</summary>
           <p class="help">
@@ -150,6 +171,8 @@
             tauko. W: lisätykit, T: tulinopeus, H: hajonta, S: kaksi
             siipikonetta. R korjaa runkoa ja E lataa pulssia. Täysi ase tai
             runko muuttaa kerättävän pisteiksi.
+            Alareunan nuolet varoittavat palaavista koneista. Hehkuva tähtäin
+            vihollisen alla kertoo pian tulevasta laukauksesta.
           </p>
         </details>
         <a class="button-link" href="../../index.html"
