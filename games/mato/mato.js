@@ -66,14 +66,67 @@
 
   /* ===== Layout ===== */
   function layout() {
-    const bs = Math.max(220, Math.min(innerWidth - 24, innerHeight - 230, 560));
+    const stage = $("stage");
+    const bs = Math.max(
+      1,
+      Math.floor(Math.min(stage.clientWidth, stage.clientHeight, 560)),
+    );
     document.documentElement.style.setProperty("--bs", bs + "px");
     const dpr = Math.min(devicePixelRatio || 1, 2.5);
-    size = Math.round(bs * dpr);
-    cv.width = size;
-    cv.height = size;
+    const nextSize = Math.round(bs * dpr);
+    if (size && size !== nextSize && state === "play") pause();
+    size = nextSize;
+    if (cv.width !== size) {
+      cv.width = size;
+      cv.height = size;
+    }
   }
-  addEventListener("resize", layout);
+  new ResizeObserver(layout).observe($("stage"));
+
+  // Preferences have their own key; existing high scores stay intact.
+  try {
+    const prefs = JSON.parse(
+      localStorage.getItem("pelikulma-mato-settings") || "{}",
+    );
+    if (["classic", "arcade", "maze", "time"].includes(prefs.mode))
+      mode = prefs.mode;
+    if (["easy", "normal", "hard"].includes(prefs.diff)) diff = prefs.diff;
+    if (typeof prefs.sound === "boolean") sound = prefs.sound;
+    if (typeof prefs.wrap === "boolean") wrap = prefs.wrap;
+    if (typeof prefs.dpad === "boolean") $("show-dpad").checked = prefs.dpad;
+  } catch {}
+  function savePreferences() {
+    try {
+      localStorage.setItem(
+        "pelikulma-mato-settings",
+        JSON.stringify({
+          mode,
+          diff,
+          sound,
+          wrap,
+          dpad: $("show-dpad").checked,
+        }),
+      );
+    } catch {}
+  }
+  function syncPreferences() {
+    for (const [selector, value, key] of [
+      ["[data-m]", mode, "m"],
+      ["[data-d]", diff, "d"],
+    ]) {
+      document.querySelectorAll(selector).forEach((button) => {
+        const selected = button.dataset[key] === value;
+        button.classList.toggle("on", selected);
+        button.setAttribute("aria-pressed", String(selected));
+      });
+    }
+    $("snd").checked = sound;
+    $("wrp").checked = wrap;
+    $("dpad").hidden = !$("show-dpad").checked;
+    $("control-hint").textContent = $("show-dpad").checked
+      ? "Pyyhkäise pelikenttää tai käytä nuolia."
+      : "Pyyhkäise kenttää. Tietokoneella: nuolet tai WASD.";
+  }
 
   /* ===== Storage / audio ===== */
   const key = () => `mato2-${mode}-${diff}`;
@@ -209,8 +262,11 @@
         ? Math.ceil(Math.max(0, CFG.timeAttack - elapsed)) + " s"
         : "TASO " + level;
     const ar = mode === "arcade";
-    $("abil").classList.toggle("off", !ar);
-    $("en").style.visibility = ar ? "visible" : "hidden";
+    $("arcade-controls").hidden = !ar;
+    $("pause").disabled = state !== "play";
+    document
+      .querySelectorAll("[data-dir]")
+      .forEach((button) => (button.disabled = state !== "play"));
     $("eni").style.width = energy + "%";
     $("shield").disabled =
       !ar || state !== "play" || energy < CFG.shieldCost || shield;
@@ -224,11 +280,20 @@
     $("ov").querySelector("h1").textContent = title;
     $("msg").textContent = msg;
     $("play").textContent = btn;
+    $("setup").hidden = state !== "menu";
+    $("difficulty-settings").hidden = state !== "menu";
+    $("wrap-setting").hidden = state !== "menu";
+    $("restart").hidden = state !== "pause";
+    $("change-mode").hidden = state !== "over";
+    $("result").hidden = state !== "over";
+    $("result-score").textContent = score;
+    $("result-best").textContent = best();
+    $("settings").open = false;
     $("ov").classList.remove("hide");
   }
   function start() {
-    reset();
     state = "play";
+    reset();
     last = performance.now();
     $("ov").classList.add("hide");
     ui();
@@ -242,21 +307,19 @@
     buzz(120);
     burst(snake[0], 36, "#ff4f9a", 5);
     setTimeout(() => {
-      if (state === "over")
-        show(
-          "Peli päättyi",
-          `${msg} Pisteet ${score} · Ennätys ${best()}`,
-          "Pelaa uudelleen",
-        );
+      if (state === "over") show("Peli päättyi", msg, "Pelaa uudelleen");
     }, 650);
     ui();
   }
+  let pausedAt = 0;
   function pause() {
     if (state === "play") {
       state = "pause";
+      pausedAt = performance.now();
       show("Tauko", "Peli on pysäytetty.", "Jatka");
     } else if (state === "pause") {
       state = "play";
+      if (slowUntil > pausedAt) slowUntil += performance.now() - pausedAt;
       last = performance.now();
       $("ov").classList.add("hide");
     }
@@ -673,6 +736,9 @@
     d: "right",
   };
   addEventListener("keydown", (e) => {
+    if (e.key !== "Escape" && e.target.closest("button,input,summary,a"))
+      return;
+    if (e.repeat && [" ", "Escape", "p", "Enter"].includes(e.key)) return;
     const d = KM[e.key] || KM[e.key.toLowerCase()];
     if (d) {
       e.preventDefault();
@@ -686,71 +752,82 @@
     else if (e.key === "2") ability("slow");
   });
 
-  // pyyhkäisy: reagoi heti kun sormi liikkuu tarpeeksi (nopea ohjaus)
+  // Listen only on the canvas, so swiping settings scrolls the dialog normally.
   let tp = null;
-  addEventListener(
-    "touchstart",
-    (e) => {
-      if (e.target.closest("button")) return;
-      tp = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-    },
-    { passive: true },
+  cv.addEventListener("pointerdown", (e) => {
+    if (state !== "play") return;
+    tp = { x: e.clientX, y: e.clientY };
+    cv.setPointerCapture(e.pointerId);
+  });
+  cv.addEventListener("pointermove", (e) => {
+    if (!tp || state !== "play") return;
+    const dx = e.clientX - tp.x,
+      dy = e.clientY - tp.y;
+    if (Math.max(Math.abs(dx), Math.abs(dy)) < 18) return;
+    Math.abs(dx) > Math.abs(dy)
+      ? turn(Math.sign(dx), 0)
+      : turn(0, Math.sign(dy));
+    tp = { x: e.clientX, y: e.clientY };
+  });
+  ["pointerup", "pointercancel", "lostpointercapture"].forEach((event) =>
+    cv.addEventListener(event, () => (tp = null)),
   );
-  addEventListener(
-    "touchmove",
-    (e) => {
-      if (!tp) return;
-      const dx = e.touches[0].clientX - tp.x,
-        dy = e.touches[0].clientY - tp.y;
-      if (Math.max(Math.abs(dx), Math.abs(dy)) < 22) return;
-      Math.abs(dx) > Math.abs(dy)
-        ? turn(Math.sign(dx), 0)
-        : turn(0, Math.sign(dy));
-      tp = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-    },
-    { passive: true },
-  );
-  addEventListener(
-    "touchend",
-    () => {
-      tp = null;
-    },
-    { passive: true },
-  );
-
+  document.querySelectorAll("[data-dir]").forEach((button) => {
+    const steer = () => {
+      const direction = DIRS[button.dataset.dir];
+      turn(direction.x, direction.y);
+    };
+    button.addEventListener("pointerdown", (event) => {
+      event.preventDefault();
+      steer();
+    });
+    button.addEventListener("click", (event) => {
+      if (event.detail === 0) steer();
+    });
+  });
+  function menu() {
+    state = "menu";
+    reset();
+    show(
+      "MATO",
+      "Kerää hedelmiä ja väistä törmäyksiä. Ohjaa pyyhkäisemällä tai ruudun nuolilla.",
+      "Aloita peli",
+    );
+    ui();
+  }
   document.querySelectorAll("[data-m]").forEach(
-    (b) =>
-      (b.onclick = () => {
-        mode = b.dataset.m;
-        document
-          .querySelectorAll("[data-m]")
-          .forEach((i) => i.classList.toggle("on", i === b));
-        state = "menu";
-        reset();
+    (button) =>
+      (button.onclick = () => {
+        mode = button.dataset.m;
+        syncPreferences();
+        savePreferences();
+        menu();
       }),
   );
   document.querySelectorAll("[data-d]").forEach(
-    (b) =>
-      (b.onclick = () => {
-        diff = b.dataset.d;
-        document
-          .querySelectorAll("[data-d]")
-          .forEach((i) => i.classList.toggle("on", i === b));
-        state = "menu";
+    (button) =>
+      (button.onclick = () => {
+        diff = button.dataset.d;
+        syncPreferences();
+        savePreferences();
         reset();
       }),
   );
-  $("snd").onclick = () => {
-    sound = !sound;
-    $("snd").classList.toggle("on", sound);
-    $("snd").textContent = "Äänet: " + (sound ? "päällä" : "pois");
+  $("snd").onchange = () => {
+    sound = $("snd").checked;
+    savePreferences();
   };
-  $("wrp").onclick = () => {
-    wrap = !wrap;
-    $("wrp").classList.toggle("on", wrap);
-    $("wrp").textContent = "Seinän läpi: " + (wrap ? "päällä" : "pois");
+  $("wrp").onchange = () => {
+    wrap = $("wrp").checked;
+    savePreferences();
+  };
+  $("show-dpad").onchange = () => {
+    syncPreferences();
+    savePreferences();
   };
   $("play").onclick = () => (state === "pause" ? pause() : start());
+  $("restart").onclick = start;
+  $("change-mode").onclick = menu;
   $("pause").onclick = pause;
   $("shield").onclick = () => ability("shield");
   $("slow").onclick = () => ability("slow");
@@ -758,7 +835,8 @@
     if (document.hidden && state === "play") pause();
   });
 
+  syncPreferences();
   layout();
-  reset();
+  menu();
   requestAnimationFrame(frame);
 })();

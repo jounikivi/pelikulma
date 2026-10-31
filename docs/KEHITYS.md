@@ -19,9 +19,6 @@ Pelilogiikka on kummankin pelin omassa suljetussa funktiossa. Pelisilmukka käyt
 
 Nämä ovat kehitysideoita, eivät vielä toteutettuja ominaisuuksia:
 
-- LOISTE-peliin tauko ja äänten kytkin.
-- Selkeät näppäimistöohjeet pelien aloitusnäkymiin.
-- MATO-pelin valikon mukautus mataliin vaakanäkymiin.
 - Pelien tärkeimpien sääntöjen erottaminen puhtaiksi funktioiksi ja yksikkötestaus.
 - Selaintestit pelien käynnistykselle, paluulinkeille ja ennätyksille.
 - PWA-asennus ja offline-pelaaminen.
@@ -33,3 +30,13 @@ Tee yksi ymmärrettävä asia kerrallaan. Hyviä nimiä ovat esimerkiksi `Lisä�
 ## Tallennukset
 
 Vanhojen ennätysten avaimet säilytettiin: `mato2-<pelimuoto>-<vaikeus>` ja `loiste-best`. Aiemman tiedostoversion, localhostin ja julkaistun sivun tallennukset eivät välttämättä näy toisilleen, koska selain erottaa tallennukset sivuston alkuperän perusteella.
+
+## Puhelin- ja tablettikäyttöliittymä
+
+Molemmat pelit käyttävät yhteistä `assets/game-ui.css`-tyylitiedostoa ja `assets/dialog.js`-skriptiä. Yhteiset valikot ovat tavallisia HTML-elementtejä: niiden sisältö vierittyy matalalla näytöllä ja näppäimistön kohdistus pysyy avoimessa valikossa. Taustalla oleva peli ei vastaanota valikon napautuksia.
+
+Pystyasennossa ohjaimet ovat kentän alla. Vähintään 560 pikseliä leveässä vaakanäkymässä ne siirtyvät oikealle. Pelikentät sovitetaan jäljelle jäävään tilaan, ja pelin aikana tapahtuva kentän koon muutos tauottaa pelin. Näin esimerkiksi laitteen kääntäminen ei kuluta peliaikaa.
+
+MATOssa suuntapainikkeet voi piilottaa asetuksista. Pyyhkäisyt käsitellään vain pelikentällä, jotta asetuksia voi vierittää normaalisti. Pelimuoto, vaikeus, äänet, seinien läpi kulkeminen ja painikkeiden näkyvyys tallentuvat avaimeen `pelikulma-mato-settings`.
+
+LOISTEessa valikot ja pisteet ovat HTML:ää ja pelikenttä Canvasia. Ensimmäinen lähtö käynnistää nousevan pimeyden. Tauko pysäyttää simulaation, ja näkyvyysmuutos tauottaa pelin automaattisesti. Ääniasetus tallentuu avaimeen `pelikulma-loiste-sound`.

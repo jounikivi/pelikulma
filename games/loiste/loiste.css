@@ -1,36 +1,54 @@
-html,
 body {
-  margin: 0;
+  --accent: #79e5ff;
+  background: radial-gradient(ellipse at top, #271745, #07040f);
+}
+.playfield {
+  width: 100%;
+  max-width: 560px;
   height: 100%;
-  background: #07040f;
+  position: relative;
   overflow: hidden;
-  overscroll-behavior: none;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: #0b0a24;
+  box-shadow: 0 16px 60px #0005;
 }
 canvas {
   display: block;
   width: 100%;
   height: 100%;
   touch-action: none;
-  -webkit-user-select: none;
   user-select: none;
-  -webkit-tap-highlight-color: transparent;
+}
+#launch {
+  min-height: 60px;
+}
+#flight-hint {
+  color: #b9f2ff;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#result-score,
+#result-best {
+  color: var(--accent);
+}
+@media (max-width: 360px) {
+  .game-header button {
+    font-size: 12px;
+    padding: 10px;
+  }
+  .scores {
+    gap: 10px;
+  }
+  .scores b {
+    font-size: 22px;
+  }
 }
 
-.bk {
-  position: fixed;
-  z-index: 50;
-  top: calc(env(safe-area-inset-top, 0px) + 10px);
-  left: 10px;
-  width: 38px;
-  height: 38px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  color: #fff;
-  font: 700 20px system-ui;
-  display: grid;
-  place-items: center;
-  text-decoration: none;
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+@media (min-width: 560px) and (orientation: landscape) {
+  #flight-hint {
+    height: 60px;
+  }
 }

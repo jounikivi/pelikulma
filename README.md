@@ -4,12 +4,14 @@ Pieni selainpelikokoelma puhelimelle ja tietokoneelle. Pelit on tehty HTML:llä,
 
 ## Pelit
 
-| Peli       | Idea                                                                                                      | Ohjaus                                                 |
-| ---------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
-| **MATO**   | Kerää hedelmiä, kasva ja väistä törmäyksiä. Classic, Arcade, Maze ja Time Attack sekä kolme vaikeustasoa. | Pyyhkäisy, nuolinäppäimet tai WASD. Välilyönti: tauko. |
-| **LOISTE** | Ajoita lähtö kiertoradalta seuraavalle ennen kuin nouseva pimeys saavuttaa sinut.                         | Napautus, hiiren napsautus, välilyönti tai Enter.      |
+| Peli       | Idea                                                                                                            | Ohjaus                                                                          |
+| ---------- | --------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| **MATO**   | Kerää hedelmiä, kasva ja väistä törmäyksiä. Perinteinen, Arcade, Sokkelo ja Aikahaaste sekä kolme vaikeustasoa. | Ruudun suuntapainikkeet, pyyhkäisy, nuolinäppäimet tai WASD. Välilyönti: tauko. |
+| **LOISTE** | Ajoita lähtö kiertoradalta seuraavalle ennen kuin nouseva pimeys saavuttaa sinut.                               | Lennä-painike, kentän napautus tai välilyönti.                                  |
 
 Ennätykset tallennetaan selaimen `localStorage`-muistiin. Ne ovat selain- ja sivustokohtaisia. MATO-valikkokortti näyttää Classic / Normaali -yhdistelmän ennätyksen; muut yhdistelmät näkyvät pelin sisällä.
+
+Puhelimella ohjaimet ovat kentän alla ja vaakanäkymässä sen vieressä. Molemmissa peleissä on taukovalikko, uudelleenaloitus ja äänten kytkin. MATO-pelin lisäasetukset löytyvät kohdasta **Asetukset ja ohjaus**.
 
 ## Käynnistä omalla koneella
 

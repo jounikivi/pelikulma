@@ -45,18 +45,94 @@
     best = +localStorage.getItem("loiste-best") || 0;
   } catch {}
 
+  const $ = (id) => document.getElementById(id);
+  let launched = false,
+    sound = true;
+  try {
+    sound = localStorage.getItem("pelikulma-loiste-sound") !== "off";
+  } catch {}
+  $("sound").checked = sound;
   function resize() {
-    dpr = Math.min(window.devicePixelRatio || 1, 2.5);
-    cv.width = innerWidth * dpr;
-    cv.height = innerHeight * dpr;
-    S = cv.width / dpr / W;
-    H = innerHeight / S;
+    const field = $("playfield");
+    const width = field.clientWidth,
+      height = field.clientHeight;
+    const ratio = Math.min(window.devicePixelRatio || 1, 2.5);
+    if (
+      cv.width === Math.round(width * ratio) &&
+      cv.height === Math.round(height * ratio)
+    )
+      return;
+    const previousH = H;
+    dpr = ratio;
+    cv.width = Math.round(width * dpr);
+    cv.height = Math.round(height * dpr);
+    S = Math.max(0.01, Math.min(width / W, height / 520));
+    H = height / S;
+    if (ship) {
+      camY -= (H - previousH) * 0.62;
+      if (state === "play") pause();
+    }
   }
-  addEventListener("resize", resize);
+  new ResizeObserver(resize).observe($("playfield"));
+
+  function setText(id, text) {
+    if ($(id).textContent !== String(text)) $(id).textContent = text;
+  }
+  function ui() {
+    setText("score", score);
+    setText("best", Math.max(score, best));
+    $("pause").disabled = state !== "play";
+    $("launch").disabled = state !== "play" || ship.flying;
+    setText("launch", ship.flying ? "Lennossa…" : "Lennä ↑");
+    setText(
+      "flight-hint",
+      !launched
+        ? "Tähtää rauhassa. Pimeys odottaa ensimmäistä lähtöä."
+        : ship.flying
+          ? "Kohti seuraavaa kiertorataa!"
+          : "Odota sopivaa suuntaa ja napauta.",
+    );
+  }
+  function show(title, message, button) {
+    setText("dialog-title", title);
+    setText("msg", message);
+    setText("play", button);
+    $("instructions").hidden = state !== "menu";
+    $("result").hidden = state !== "dead";
+    $("restart").hidden = state !== "pause";
+    setText("result-score", score);
+    setText("result-best", best);
+    $("ov").classList.remove("hide");
+    ui();
+  }
+  function start() {
+    reset();
+    state = "play";
+    last = performance.now();
+    $("ov").classList.add("hide");
+    beep(440, 0.15);
+    ui();
+  }
+  function pause() {
+    if (state === "play") {
+      state = "pause";
+      show(
+        "Tauko",
+        "Jatka siitä, mihin jäit, tai aloita uusi peli.",
+        "Jatka peliä",
+      );
+    } else if (state === "pause") {
+      state = "play";
+      last = performance.now();
+      $("ov").classList.add("hide");
+      ui();
+    }
+  }
 
   /* ===== Ääni ===== */
   let ac;
   function beep(f, d = 0.1, type = "triangle", v = 0.06) {
+    if (!sound) return;
     try {
       ac ||= new (window.AudioContext || window.webkitAudioContext)();
       if (ac.state === "suspended") ac.resume();
@@ -75,7 +151,7 @@
   }
   const buzz = (ms) => {
     try {
-      navigator.vibrate && navigator.vibrate(ms);
+      sound && navigator.vibrate && navigator.vibrate(ms);
     } catch {}
   };
 
@@ -121,6 +197,7 @@
     camY = -H * 0.62;
     tideY = CFG.tideStart;
     score = 0;
+    launched = false;
     combo = 0;
     newBest = false;
     shake = 0;
@@ -143,21 +220,8 @@
   }
 
   function tap() {
-    if (state === "menu") {
-      reset();
-      state = "play";
-      beep(440, 0.15);
-      return;
-    }
-    if (state === "dead") {
-      if (t - deadAt > 0.5) {
-        reset();
-        state = "play";
-        beep(440, 0.15);
-      }
-      return;
-    }
-    if (ship.flying) return;
+    if (state !== "play" || ship.flying) return;
+    launched = true;
     const p = ship.planet,
       tx = -Math.sin(ship.ang) * ship.dir,
       ty = Math.cos(ship.ang) * ship.dir;
@@ -169,12 +233,11 @@
     burst(ship.x, ship.y, 8, p.hue, 120);
     beep(300, 0.09, "square", 0.03);
     buzz(8);
+    ui();
   }
 
-  let deadAt = 0;
   function die() {
     state = "dead";
-    deadAt = t;
     shake = 18;
     flash = 1;
     burst(ship.x, ship.y, 40, 330, 300);
@@ -187,9 +250,15 @@
         localStorage.setItem("loiste-best", best);
       } catch {}
     }
+    show(
+      newBest ? "Uusi ennätys!" : "Sammuit",
+      "Uusi lento, uusi mahdollisuus. Kokeile uudelleen!",
+      "Pelaa uudelleen",
+    );
   }
 
   function update(dt) {
+    if (state === "pause") return;
     t += dt;
     shake = Math.max(0, shake - CFG.shakeDecay * dt * 3);
     flash = Math.max(0, flash - dt * 3);
@@ -258,7 +327,8 @@
     trail.push({ x: ship.x, y: ship.y });
     if (trail.length > CFG.trailLen) trail.shift();
 
-    tideY -= Math.min(CFG.tideMax, CFG.tideBase + score * CFG.tideGain) * dt;
+    if (launched)
+      tideY -= Math.min(CFG.tideMax, CFG.tideBase + score * CFG.tideGain) * dt;
     if (ship.y > tideY) return die();
 
     camY += (Math.min(camY, ship.y - H * 0.62) - camY) * Math.min(1, dt * 5);
@@ -291,7 +361,9 @@
   }
 
   function draw() {
-    ctx.setTransform(dpr * S, 0, 0, dpr * S, 0, 0);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    ctx.setTransform(dpr * S, 0, 0, dpr * S, (cv.width - W * dpr * S) / 2, 0);
     const g = ctx.createLinearGradient(0, 0, 0, H);
     g.addColorStop(0, "#0b0a24");
     g.addColorStop(1, "#1a0a2e");
@@ -344,7 +416,7 @@
           q = trail[i];
         glow(q.x, sy(q.y), 2 + k * 6, 185, k * 0.5);
       }
-      if (state === "play") {
+      if (state === "play" || state === "pause") {
         if (!ship.flying) {
           const tx = -Math.sin(ship.ang) * ship.dir,
             ty = Math.cos(ship.ang) * ship.dir;
@@ -389,64 +461,9 @@
       ctx.fill();
     }
 
-    /* UI */
-    if (state === "play") {
-      text(String(score), W / 2, 76, 54, "#fff");
-      if (combo > 1)
-        text(
-          "×" + (combo + 1) + " KOMBO",
-          W / 2,
-          102,
-          14,
-          "#7ff",
-          "center",
-          800,
-        );
-    } else if (state === "menu") {
-      text("LOISTE", W / 2, H * 0.34, 58, "#fff", "center", 800);
-      text(
-        "Pysy valossa. Pimeys nousee.",
-        W / 2,
-        H * 0.34 + 30,
-        15,
-        "#b9a8ff",
-        "center",
-        500,
-      );
-      text(
-        "Napauta: lennä kiertoradalta seuraavalle",
-        W / 2,
-        H * 0.62,
-        14,
-        "#9ff",
-        "center",
-        600,
-      );
-      text(
-        "Napauta aloittaaksesi",
-        W / 2,
-        H * 0.62 + 28,
-        18,
-        "#fff",
-        "center",
-        700,
-      );
-    } else {
-      ctx.fillStyle = `rgba(255,255,255,${flash * 0.5})`;
-      ctx.fillRect(0, 0, W, H);
-      ctx.fillStyle = "rgba(4,2,10,.55)";
-      ctx.fillRect(0, 0, W, H);
-      text("SAMMUIT", W / 2, H * 0.3, 44, "#ff5fa0", "center", 800);
-      text(String(score), W / 2, H * 0.3 + 70, 72, "#fff", "center", 800);
-      text(
-        newBest ? "UUSI ENNÄTYS!" : "Ennätys " + best,
-        W / 2,
-        H * 0.3 + 104,
-        16,
-        newBest ? "#ffd36b" : "#b9a8ff",
-      );
-      if (t - deadAt > 0.5)
-        text("Napauta uudelleen", W / 2, H * 0.66, 18, "#fff", "center", 700);
+    // Menus and results are DOM controls, so their text scales and scrolls.
+    if (state === "play" && combo > 1) {
+      text("×" + (combo + 1) + " KOMBO", W / 2, 34, 14, "#7ff");
     }
   }
 
@@ -456,6 +473,7 @@
     const dt = Math.min(0.033, (now - last) / 1000 || 0);
     last = now;
     update(dt);
+    ui();
     draw();
     requestAnimationFrame(frame);
   }
@@ -463,17 +481,38 @@
     e.preventDefault();
     tap();
   });
+  $("play").onclick = () => (state === "pause" ? pause() : start());
+  $("restart").onclick = start;
+  $("pause").onclick = pause;
+  $("launch").onclick = tap;
+  $("sound").onchange = () => {
+    sound = $("sound").checked;
+    try {
+      localStorage.setItem("pelikulma-loiste-sound", sound ? "on" : "off");
+    } catch {}
+  };
   addEventListener("keydown", (e) => {
+    if (e.repeat) return;
+    if (e.key === "Escape" || e.key.toLowerCase() === "p") {
+      e.preventDefault();
+      pause();
+      return;
+    }
+    if (e.target.closest("button,input,a,summary")) return;
     if (e.key === " " || e.key === "Enter") {
       e.preventDefault();
-      tap();
+      if (state === "play") tap();
+      else if (state === "pause") pause();
+      else start();
     }
   });
   document.addEventListener("visibilitychange", () => {
+    if (document.hidden && state === "play") pause();
     last = performance.now();
   });
 
   resize();
   reset();
+  ui();
   requestAnimationFrame(frame);
 })();

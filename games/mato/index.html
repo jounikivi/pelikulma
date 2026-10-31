@@ -4,70 +4,145 @@
     <meta charset="UTF-8" />
     <meta
       name="viewport"
-      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
-    <title>MATO</title>
-
+    <title>MATO · Pelikulma</title>
+    <link rel="stylesheet" href="../../assets/game-ui.css" />
     <link rel="stylesheet" href="./mato.css" />
     <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml" />
     <script src="./mato.js" defer></script>
+    <script src="../../assets/dialog.js" defer></script>
   </head>
   <body>
-    <div id="app">
-      <div class="hud">
-        <div><small>PISTEET</small><b id="score">0</b></div>
-        <div class="r">
-          <small>ENNÄTYS <span id="best">0</span></small
-          ><b id="lvl">TASO 1</b>
+    <main id="app" class="game-app">
+      <header class="game-header">
+        <a
+          class="button-link home"
+          href="../../index.html"
+          aria-label="Takaisin Pelikulmaan"
+          >‹ Pelit</a
+        >
+        <div class="scores">
+          <div><small>PISTEET</small><b id="score">0</b></div>
+          <div><small>ENNÄTYS</small><b id="best">0</b></div>
         </div>
-        <button class="ib" id="pause" aria-label="Tauko tai jatka">Ⅱ</button>
-      </div>
-      <div id="wrap">
-        <canvas id="cv" aria-label="Matopelin pelikenttä"></canvas>
-        <div id="ov">
-          <h1>MATO</h1>
-          <p id="msg">Pyyhkäise ohjataksesi. Kerää, kasva, selviydy.</p>
-          <div class="grid" id="modes">
-            <button class="chip on" data-m="classic">
-              CLASSIC<small>Perinteinen</small>
-            </button>
-            <button class="chip" data-m="arcade">
-              ARCADE<small>Viholliset + kyvyt</small>
-            </button>
-            <button class="chip" data-m="maze">
-              MAZE<small>Sokkelot</small>
-            </button>
-            <button class="chip" data-m="time">
-              TIME ATTACK<small>90 sekuntia</small>
-            </button>
-          </div>
-          <div class="row" id="diffs">
-            <button class="chip" data-d="easy">Helppo</button>
-            <button class="chip on" data-d="normal">Normaali</button>
-            <button class="chip" data-d="hard">Vaikea</button>
-          </div>
-          <div class="row">
-            <button class="chip on" id="snd">Äänet: päällä</button>
-            <button class="chip" id="wrp">Seinän läpi: pois</button>
-          </div>
-          <a
-            class="chip"
-            href="../../index.html"
-            style="
-              max-width: 310px;
-              width: 100%;
-              text-decoration: none;
-              display: block;
-            "
-            >‹ Pelivalikko</a
-          ><button class="go" id="play">Aloita peli</button>
+        <button id="pause" aria-label="Avaa taukovalikko" disabled>
+          Ⅱ Tauko
+        </button>
+      </header>
+      <div class="stage" id="stage">
+        <div id="wrap">
+          <canvas
+            id="cv"
+            aria-label="Matopelin pelikenttä. Ohjaa pyyhkäisemällä tai suuntapainikkeilla."
+          ></canvas>
         </div>
       </div>
-      <div id="en"><i id="eni"></i></div>
-      <div class="abil off" id="abil">
-        <button id="shield" disabled>🛡 Kilpi (40)</button>
-        <button id="slow" disabled>⏳ Hidastus (55)</button>
+      <div class="controls">
+        <p class="hint" id="lvl">TASO 1</p>
+        <div id="arcade-controls" hidden>
+          <div id="en" aria-label="Kykyjen energia"><i id="eni"></i></div>
+          <div class="abil" id="abil">
+            <button id="shield" disabled>Kilpi (40)</button
+            ><button id="slow" disabled>Hidastus (55)</button>
+          </div>
+        </div>
+        <div
+          id="dpad"
+          class="dpad"
+          role="group"
+          aria-label="Madon suuntapainikkeet"
+        >
+          <button data-dir="up" aria-label="Ylös">↑</button
+          ><button data-dir="left" aria-label="Vasemmalle">←</button
+          ><button data-dir="down" aria-label="Alas">↓</button
+          ><button data-dir="right" aria-label="Oikealle">→</button>
+        </div>
+        <p class="hint" id="control-hint">
+          Pyyhkäise pelikenttää tai käytä nuolia.
+        </p>
       </div>
+    </main>
+    <div class="overlay" id="ov">
+      <section
+        class="sheet"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="dialog-title"
+        aria-describedby="msg"
+        tabindex="-1"
+      >
+        <p class="eyebrow">PELIKULMA / MATO</p>
+        <h1 id="dialog-title">MATO</h1>
+        <p id="msg" class="dialog-message">
+          Kerää hedelmiä ja väistä törmäyksiä. Ohjaa pyyhkäisemällä tai ruudun
+          nuolilla.
+        </p>
+        <div class="result" id="result" hidden>
+          <div><small>Pisteet</small><b id="result-score">0</b></div>
+          <div><small>Oma ennätys</small><b id="result-best">0</b></div>
+        </div>
+        <div id="setup">
+          <fieldset>
+            <legend>Valitse pelimuoto</legend>
+            <div class="grid" id="modes">
+              <button class="chip on" data-m="classic" aria-pressed="true">
+                Perinteinen<small>Kerää ja kasva</small>
+              </button>
+              <button class="chip" data-m="arcade" aria-pressed="false">
+                Arcade<small>Viholliset ja kyvyt</small>
+              </button>
+              <button class="chip" data-m="maze" aria-pressed="false">
+                Sokkelo<small>Väistä myös esteitä</small>
+              </button>
+              <button class="chip" data-m="time" aria-pressed="false">
+                Aikahaaste<small>90 sekuntia</small>
+              </button>
+            </div>
+          </fieldset>
+        </div>
+        <div class="sheet-actions">
+          <button class="primary" id="play">Aloita peli</button
+          ><button id="restart" hidden>Aloita alusta</button
+          ><button id="change-mode" hidden>Vaihda pelimuotoa</button>
+        </div>
+        <details id="settings">
+          <summary>Asetukset ja ohjaus</summary>
+          <div class="settings-content">
+            <fieldset id="difficulty-settings">
+              <legend>Vaikeustaso</legend>
+              <div class="row" id="diffs">
+                <button class="chip" data-d="easy" aria-pressed="false">
+                  Helppo</button
+                ><button class="chip on" data-d="normal" aria-pressed="true">
+                  Normaali</button
+                ><button class="chip" data-d="hard" aria-pressed="false">
+                  Vaikea
+                </button>
+              </div>
+            </fieldset>
+            <label class="switch"
+              >Äänet ja värinä<input type="checkbox" id="snd" checked
+            /></label>
+            <label class="switch" id="wrap-setting"
+              >Kulje seinien läpi<input type="checkbox" id="wrp"
+            /></label>
+            <label class="switch"
+              >Näytä suuntapainikkeet<input
+                type="checkbox"
+                id="show-dpad"
+                checked
+            /></label>
+            <p>
+              Pyyhkäise pelikentällä haluamaasi suuntaan. Tietokoneella: nuolet
+              tai WASD, välilyönti tauottaa. Arcaden kyvyt: 1 ja 2.
+            </p>
+          </div>
+        </details>
+        <a class="button-link" href="../../index.html"
+          >‹ Takaisin pelivalikkoon</a
+        >
+      </section>
     </div>
   </body>
 </html>

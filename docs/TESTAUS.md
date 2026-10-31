@@ -12,7 +12,8 @@ Aja `npm run check`. Käynnistä sitten `npm start` ja käy läpi alla olevat ko
 ## MATO
 
 - Kaikki neljä pelimuotoa käynnistyvät ja kolme vaikeustasoa toimivat.
-- Nuolinäppäimet, WASD ja pyyhkäisy ohjaavat matoa.
+- Nuolinäppäimet, WASD, pyyhkäisy ja ruudun suuntapainikkeet ohjaavat matoa.
+- Suuntapainikkeiden piilottaminen ja asetusten tallentuminen toimivat.
 - Hedelmä kasvattaa matoa ja pisteitä.
 - Seinään ja omaan vartaloon osuminen päättää pelin.
 - Seinän läpi -asetus toimii.
@@ -23,8 +24,10 @@ Aja `npm run check`. Käynnistä sitten `npm start` ja käy läpi alla olevat ko
 
 ## LOISTE
 
-- Napautus tai välilyönti käynnistää pelin.
-- Seuraava napautus laukaisee aluksen kiertoradalta.
+- Aloita peli -painike käynnistää pelin.
+- Kentän napautus, Lennä-painike ja välilyönti laukaisevat aluksen kiertoradalta.
+- Pimeys pysyy paikallaan ennen ensimmäistä lähtöä.
+- Tauko, jatkaminen, uudelleenaloitus ja äänten kytkin toimivat.
 - Seuraavalle planeetalle pääsy nostaa pisteitä.
 - Pimeys nousee ja päättää pelin saavuttaessaan aluksen.
 - Uudelleenaloitus ja ennätyksen tallennus toimivat.
@@ -36,3 +39,19 @@ Aja `npm run check`. Käynnistä sitten `npm start` ja käy läpi alla olevat ko
 - Tarkista tavallinen tietokoneen selainikkuna.
 - Käy toisella välilehdellä kesken pelin ja palaa takaisin.
 - Tarkista selaimen kehittäjätyökalujen Console virheiden varalta.
+
+- Käännä laite kesken pelin: peli tauottuu ja ohjaimet asettuvat uudelleen.
+- Avaa asetukset pienellä näytöllä ja varmista, että niitä voi vierittää.
+
+## Mobiiliuudistuksen tarkistus 31.10.2026
+
+Paikallisessa selaintestissä käytettiin näyttökokoja 320 × 568, 390 × 844, 667 × 375, 768 × 1024 ja 1024 × 768. Näkymiä tarkastettiin kuvista ja pelikentän sekä ohjaimien sijainneista.
+
+- Kaikkien neljän MATO-pelimuodon käynnistys sekä tauko ja jatkaminen kokeiltiin.
+- MATO-pelin suuntapainike, tulosnäkymä, uudelleenaloitus ja pelimuodon vaihto kokeiltiin.
+- Suuntapainikkeiden piilotus säilyi sivun uudelleenlatauksessa, minkä jälkeen painikkeet palautettiin näkyviin.
+- LOISTEen aloitus, Lennä-painike, tauko, jatkaminen, tulosnäkymä ja uudelleenaloitus kokeiltiin.
+- Näyttökoon vaihto tauotti käynnissä olevan pelin molemmissa peleissä.
+- Näissä selaintesteissä ei havaittu konsolivirheitä. `npm run check` läpäisi 25 syntaksi- ja linkkitarkistusta.
+
+Nämä olivat selaimen näyttökoon vaihteluun perustuvia tarkistuksia. Fyysisten puhelinten ja tablettien kosketustuntumaa, selainten ylä- ja alapalkkeja tai kaikkia pelisääntöjä ei testattu kattavasti.

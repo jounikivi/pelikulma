@@ -4,17 +4,90 @@
     <meta charset="UTF-8" />
     <meta
       name="viewport"
-      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
-    <title>LOISTE</title>
-
+    <title>LOISTE · Pelikulma</title>
+    <link rel="stylesheet" href="../../assets/game-ui.css" />
     <link rel="stylesheet" href="./loiste.css" />
     <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml" />
     <script src="./loiste.js" defer></script>
+    <script src="../../assets/dialog.js" defer></script>
   </head>
   <body>
-    <canvas id="c" aria-label="Loiste-pelin pelikenttä"></canvas>
-
-    <a class="bk" href="../../index.html" aria-label="Valikko">‹</a>
+    <main class="game-app">
+      <header class="game-header">
+        <a
+          class="button-link home"
+          href="../../index.html"
+          aria-label="Takaisin Pelikulmaan"
+          >‹ Pelit</a
+        >
+        <div class="scores">
+          <div><small>PISTEET</small><b id="score">0</b></div>
+          <div><small>ENNÄTYS</small><b id="best">0</b></div>
+        </div>
+        <button id="pause" aria-label="Avaa taukovalikko" disabled>
+          Ⅱ Tauko
+        </button>
+      </header>
+      <div class="stage">
+        <div class="playfield" id="playfield">
+          <canvas
+            id="c"
+            aria-label="Loiste-pelin pelikenttä. Napauta tai käytä Lennä-painiketta."
+          ></canvas>
+        </div>
+      </div>
+      <div class="controls">
+        <p class="hint" id="flight-hint" aria-live="polite">
+          Ajoita lähtö seuraavaa planeettaa kohti.
+        </p>
+        <button class="primary" id="launch" disabled>Lennä ↑</button>
+        <p class="hint">
+          Napauta kenttää tai painiketta. Tietokoneella: välilyönti.
+        </p>
+      </div>
+    </main>
+    <div class="overlay" id="ov">
+      <section
+        class="sheet"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="dialog-title"
+        aria-describedby="msg"
+        tabindex="-1"
+      >
+        <p class="eyebrow">PELIKULMA / LOISTE</p>
+        <h1 id="dialog-title">LOISTE</h1>
+        <p class="dialog-message" id="msg">
+          Lennä planeetalta toiselle. Pysy nousevan pimeyden edellä.
+        </p>
+        <ol class="instructions" id="instructions">
+          <li>
+            Alus kiertää planeettaa. Odota, että suuntaviiva osoittaa seuraavaa
+            planeettaa kohti.
+          </li>
+          <li>Napauta kenttää tai Lennä-painiketta lähteäksesi.</li>
+          <li>
+            Ensimmäisen lähdön saat valmistella rauhassa. Pimeys liikkuu vasta
+            lähdettyäsi.
+          </li>
+        </ol>
+        <div class="result" id="result" hidden>
+          <div><small>Pisteet</small><b id="result-score">0</b></div>
+          <div><small>Oma ennätys</small><b id="result-best">0</b></div>
+        </div>
+        <div class="sheet-actions">
+          <button class="primary" id="play">Aloita peli</button
+          ><button id="restart" hidden>Aloita alusta</button>
+        </div>
+        <label class="switch"
+          >Äänet ja värinä<input type="checkbox" id="sound" checked
+        /></label>
+        <a class="button-link" href="../../index.html"
+          >‹ Takaisin pelivalikkoon</a
+        >
+      </section>
+    </div>
   </body>
 </html>
