@@ -4,14 +4,16 @@ Pieni selainpelikokoelma puhelimelle ja tietokoneelle. Pelit on tehty HTML:llä,
 
 ## Pelit
 
-| Peli       | Idea                                                                                                                                                | Ohjaus                                                                                            |
-| ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| **MATO**   | Kerää hedelmiä, kasva ja väistä törmäyksiä. LCD-ruudun puhelinmato: Perinteinen, Taskutwist, Arcade, Sokkelo ja Aikahaaste sekä kolme vaikeustasoa. | Puhelinnäppäimet 2/4/6/8, ruudun painikkeet, pyyhkäisy, nuolet tai WASD. 5 tai välilyönti: tauko. |
-| **LOISTE** | Ajoita lähtö kiertoradalta seuraavalle ennen kuin nouseva pimeys saavuttaa sinut.                                                                   | Lennä-painike, kentän napautus tai välilyönti.                                                    |
+| Peli             | Idea                                                                                                                                                | Ohjaus                                                                                                |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| **MATO**         | Kerää hedelmiä, kasva ja väistä törmäyksiä. LCD-ruudun puhelinmato: Perinteinen, Taskutwist, Arcade, Sokkelo ja Aikahaaste sekä kolme vaikeustasoa. | Puhelinnäppäimet 2/4/6/8, ruudun painikkeet, pyyhkäisy, nuolet tai WASD. 5 tai välilyönti: tauko.     |
+| **LOISTE**       | Ajoita lähtö kiertoradalta seuraavalle ennen kuin nouseva pimeys saavuttaa sinut.                                                                   | Lennä-painike, kentän napautus tai välilyönti.                                                        |
+| **POMPPU**       | Kuusi palikanmurskauskenttää, kolme palloa ja ladattava kipinälyönti.                                                                               | Sormen tai hiiren liike, liukusäädin, nuolet tai A/D. Välilyönti lähettää pallon, K virittää kipinän. |
+| **TAIVASKIPINÄ** | Oma pystyräiskintäkampanja: viisi aluetta ja pomoa, kolme vaikeustasoa, aseparannukset ja torjuntapulssi.                                           | Liu’utus kentällä tai ohjausalueella, nuolet tai WASD. Välilyönti tai X: pulssi. P tai Esc: tauko.    |
 
 Ennätykset tallennetaan selaimen `localStorage`-muistiin. Ne ovat selain- ja sivustokohtaisia. MATO-valikkokortti näyttää Perinteinen / Normaali -yhdistelmän ennätyksen; muut yhdistelmät näkyvät pelin sisällä.
 
-Puhelimella ohjaimet ovat kentän alla ja vaakanäkymässä sen vieressä. Molemmissa peleissä on taukovalikko, uudelleenaloitus ja äänten kytkin. MATO-pelin lisäasetukset löytyvät kohdasta **Asetukset ja ohjaus**.
+Puhelimella ohjaimet ovat kentän alla ja vaakanäkymässä sen vieressä. Kaikissa peleissä on taukovalikko, uudelleenaloitus ja äänten kytkin. MATO-pelin lisäasetukset löytyvät kohdasta **Asetukset ja ohjaus**.
 
 ## Käynnistä omalla koneella
 
@@ -22,7 +24,7 @@ Tarvitset [Node.js:n](https://nodejs.org/) version 22 tai uudemman.
 3. Avaa selaimessa **http://localhost:5173**.
 4. Sulje palvelin terminaalissa painamalla **Ctrl+C**.
 
-Erillistä `npm install` -vaihetta ei tarvita: projektilla ei ole asennettavia riippuvuuksia. Käytä kehityksessä paikallista palvelinta: MATO käyttää JavaScript-moduuleja, jotka eivät toimi luotettavasti suoraan tiedostona avattaessa.
+Erillistä `npm install` -vaihetta ei tarvita: projektilla ei ole asennettavia riippuvuuksia. Käytä kehityksessä paikallista palvelinta: MATO, POMPPU ja TAIVASKIPINÄ käyttävät JavaScript-moduuleja, jotka eivät toimi luotettavasti suoraan tiedostona avattaessa.
 
 ## Vie projekti GitHubiin GitHub Desktopilla
 
@@ -63,11 +65,21 @@ pelikulma/
 │   │   ├── mato.css           Matopelin ulkoasu
 │   │   ├── mato.js            Matopelin toiminta ja asetukset
 │   │   └── mato-rules.js      Liikkumisen ja Taskutwistin säännöt
-│   └── loiste/
-│       ├── index.html         Loiste-pelin sivu
-│       ├── loiste.css         Loiste-pelin ulkoasu
-│       └── loiste.js          Loiste-pelin toiminta ja asetukset
-├── tests/                     Madon sääntöjen regressiotestit
+│   ├── loiste/
+│   │   ├── index.html         Loiste-pelin sivu
+│   │   ├── loiste.css         Loiste-pelin ulkoasu
+│   │   └── loiste.js          Loiste-pelin toiminta ja asetukset
+│   ├── pomppu/
+│   │   ├── index.html         POMPUN käyttöliittymä
+│   │   ├── pomppu.css         Arcade-ulkoasu
+│   │   ├── pomppu.js          Ohjaus, piirto ja valikot
+│   │   └── pomppu-engine.js   Pelifysiikka ja kuusi kenttää
+│   └── taivaskipina/
+│       ├── index.html         Lentokampanjan käyttöliittymä
+│       ├── style.css          Ilme ja mobiiliasettelu
+│       ├── game.js            Piirto, ohjaus ja tallentaminen
+│       └── engine.js          Aallot, pomot ja pelisäännöt
+├── tests/                     Pelien sääntöjen ja fysiikan testit
 ├── scripts/                   Paikallinen palvelin ja tarkistukset
 ├── docs/                      Kehitys- ja testausohjeet
 └── .github/                   Automaattinen tarkistus ja ilmoituspohjat
@@ -82,11 +94,15 @@ pelikulma/
 
 Taskutwistissä joka viides omena tuo X-merkillä näkyvän katkaisupalan. Sen nappaaminen kahdeksassa sekunnissa antaa 30 pistettä ja lyhentää häntää neljällä ruudulla. Madosta jää aina vähintään neljä ruutua. Perinteinen-tilassa ei ole katkaisupaloja.
 
+POMPUSSA viisi palikkaosumaa lataa kipinälyönnin. Viritä kipinä ja ota pallo mailaan: läpäisevä teho kestää kuusi sekuntia peliaikaa. Vahvistetut palikat kestävät kaksi tavallista osumaa, mutta kipinä läpäisee ne kerralla. Kentän läpäisystä saa 100 bonuspistettä. Ennätys tallentuu avaimeen `pomppu-best`.
+
+TAIVASKIPINÄ tallentaa jatkopaikan aina alueen alkuun. Valitse aloitusvalikosta **Jatka**, kun palaat peliin. Nykyinen alue alkaa alusta sen aloituspisteillä ja varusteilla. Vaikeustasoilla on omat ennätyksensä (`taivaskipina-best-easy`, `taivaskipina-best-normal`, `taivaskipina-best-hard`), ja etusivu näyttää normaalin tilan ennätyksen.
+
 Katso [kehitysohje](docs/KEHITYS.md) ja [testauslista](docs/TESTAUS.md).
 
 ## Tarkistukset
 
-`npm run check` tarkistaa JavaScriptin syntaksin sekä HTML-tiedostojen paikalliset linkit, tyylitiedostot ja skriptiviittaukset. `npm test` tarkistaa madon liikkumisen, kasvun, häntätörmäykset ja katkaisupalan säännöt. Molemmat tarkistukset suoritetaan GitHub Actionsissa pushin ja pull requestin yhteydessä. Se ei korvaa pelaamista selaimessa.
+`npm run check` tarkistaa JavaScriptin syntaksin sekä HTML-tiedostojen paikalliset linkit, tyylitiedostot ja skriptiviittaukset. `npm test` tarkistaa madon säännöt sekä POMPUN törmäykset, elämät, kentät ja kipinälyönnin. Automaattinen pelisimulaatio käy kaikki kuusi kenttää läpi sekä tavallisella että kompaktilla kentällä. Molemmat tarkistukset suoritetaan GitHub Actionsissa pushin ja pull requestin yhteydessä. Se ei korvaa pelaamista selaimessa.
 
 ## Julkaise pelattavaksi GitHub Pagesissa
 

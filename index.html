@@ -9,7 +9,7 @@
     <title>PELIKULMA — pieni oma pelisali</title>
     <meta
       name="description"
-      content="Retropelien fiilistä ja uusia omia minipelejä. Pelaa MATOa ja LOISTEtta ilmaiseksi suoraan selaimessa, puhelimella tai tabletilla."
+      content="Retropelien fiilistä ja uusia omia minipelejä. MATO, LOISTE, POMPPU ja TAIVASKIPINÄ: pelaa ilmaiseksi suoraan selaimessa, puhelimella tai tabletilla."
     />
     <meta name="theme-color" content="#151527" />
     <link rel="stylesheet" href="./assets/menu.css" />
@@ -91,7 +91,8 @@
               <h2 id="games-title">Mitä tänään pelataan?</h2>
             </div>
             <span class="game-count"
-              >02 PELIÄ <span aria-hidden="true">▦</span></span
+              ><span id="game-count">04 PELIÄ</span>
+              <span aria-hidden="true">▦</span></span
             >
           </div>
           <div class="game-grid">
@@ -169,6 +170,80 @@
                 </div>
               </a>
             </article>
+            <article class="game-card bounce-card">
+              <a
+                class="game-link"
+                href="./games/pomppu/index.html"
+                aria-labelledby="pomppu-title pomppu-play"
+                aria-describedby="pomppu-description pomppu-record"
+              >
+                <div class="game-art">
+                  <img
+                    src="./assets/retro/pomppu.svg"
+                    alt=""
+                    width="640"
+                    height="280"
+                  /><span class="cartridge-label">03 / RETROREMIX</span
+                  ><span class="art-number" aria-hidden="true">03</span>
+                </div>
+                <div class="game-info">
+                  <div class="game-title-row">
+                    <h3 id="pomppu-title">POMPPU</h3>
+                    <span class="genre">PALIKAT PALOIKSI</span>
+                  </div>
+                  <p id="pomppu-description">
+                    Maila, pallo ja kuusi kenttää. Lataa kipinä ja päätä,
+                    milloin murskaat palikoiden läpi.
+                  </p>
+                  <div class="game-footer">
+                    <div class="record" id="pomppu-record">
+                      <span>OMA ENNÄTYS</span><b id="bp">0</b
+                      ><small>Kuusi kenttää · Kolme palloa</small>
+                    </div>
+                    <span class="play-button" id="pomppu-play"
+                      >PELAA <span aria-hidden="true">↗</span></span
+                    >
+                  </div>
+                </div>
+              </a>
+            </article>
+            <article class="game-card sky-card">
+              <a
+                class="game-link"
+                href="./games/taivaskipina/index.html"
+                aria-labelledby="sky-title sky-play"
+                aria-describedby="sky-description sky-record"
+              >
+                <div class="game-art">
+                  <img
+                    src="./assets/retro/taivaskipina.svg"
+                    alt=""
+                    width="640"
+                    height="280"
+                  /><span class="cartridge-label">04 / OMA KAMPANJA</span
+                  ><span class="art-number" aria-hidden="true">04</span>
+                </div>
+                <div class="game-info">
+                  <div class="game-title-row">
+                    <h3 id="sky-title">TAIVASKIPINÄ</h3>
+                    <span class="genre">LENTÄVIEN SAARTEN PUOLUSTAJA</span>
+                  </div>
+                  <p id="sky-description">
+                    Viisi aluetta, viisi pomokonetta. Paranna alustasi ja torju
+                    myrskykoneiden tuli omalla pulssillasi.
+                  </p>
+                  <div class="game-footer">
+                    <div class="record" id="sky-record">
+                      <span>OMA ENNÄTYS</span><b id="bt">0</b
+                      ><small>Normaali · Jatkettava kampanja</small>
+                    </div>
+                    <span class="play-button" id="sky-play"
+                      >PELAA <span aria-hidden="true">↗</span></span
+                    >
+                  </div>
+                </div>
+              </a>
+            </article>
           </div>
           <p class="save-note">
             <span aria-hidden="true">▣</span> Ennätyksesi tallentuvat tähän
@@ -189,8 +264,8 @@
               Yhteistä on helppo aloitus ja halu kokeilla vielä kerran.
             </p>
             <p class="about-footnote">
-              Kokoelma alkaa madosta ja loisteesta. Uusille kokeiluille on aina
-              tilaa.
+              Mukana puhelinmatoa, avaruuslentoja ja palikoiden murskaamista.
+              Uusille kokeiluille on aina tilaa.
             </p>
           </div>
         </section>

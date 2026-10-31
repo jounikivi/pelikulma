@@ -15,6 +15,14 @@ function updateRecords() {
   ).toLocaleString("fi-FI");
   document.getElementById("bl").textContent =
     readRecord("loiste-best").toLocaleString("fi-FI");
+  document.getElementById("bp").textContent =
+    readRecord("pomppu-best").toLocaleString("fi-FI");
+  document.getElementById("bt").textContent = readRecord(
+    "taivaskipina-best-normal",
+  ).toLocaleString("fi-FI");
+  document.getElementById("game-count").textContent =
+    String(document.querySelectorAll(".game-card").length).padStart(2, "0") +
+    " PELIÄ";
 }
 
 updateRecords();

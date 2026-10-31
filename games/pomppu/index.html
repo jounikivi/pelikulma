@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="fi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>POMPPU · Pelikulma</title>
+    <meta name="theme-color" content="#18172a" />
+    <link rel="stylesheet" href="../../assets/game-ui.css" />
+    <link rel="stylesheet" href="./pomppu.css" />
+    <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml" />
+    <script src="./pomppu.js" type="module"></script>
+    <script src="../../assets/dialog.js" defer></script>
+  </head>
+  <body>
+    <main class="game-app">
+      <header class="game-header">
+        <a
+          class="button-link home"
+          href="../../index.html"
+          aria-label="Takaisin Pelikulmaan"
+          >‹ Pelit</a
+        >
+        <div class="scores">
+          <div><small>PISTEET</small><b id="score">0</b></div>
+          <div><small>ENNÄTYS</small><b id="best">0</b></div>
+        </div>
+        <button id="pause" aria-label="Avaa taukovalikko" disabled>
+          Ⅱ Tauko
+        </button>
+      </header>
+      <div class="stage" id="stage">
+        <div id="playfield">
+          <div class="court-info">
+            <span id="round">KENTTÄ 1 / 6</span
+            ><span id="lives" aria-label="Palloja jäljellä: 3">● ● ●</span>
+          </div>
+          <canvas
+            id="court"
+            width="720"
+            height="1080"
+            aria-label="POMPPU-pelin pelikenttä. Liikuta mailaa sormella, liukusäätimellä tai nuolinäppäimillä."
+          ></canvas>
+        </div>
+      </div>
+      <div class="controls">
+        <label class="slider-label" for="paddle-input"
+          >MAILAN OHJAUS <span>← LIU'UTA →</span></label
+        ><input
+          id="paddle-input"
+          aria-label="Mailan sijainti"
+          type="range"
+          min="43"
+          max="317"
+          value="180"
+          step="1"
+          disabled
+        />
+        <button class="primary" id="launch" disabled>Lähetä pallo ↑</button>
+        <div class="spark-panel">
+          <div class="spark-label">
+            <span>KIPINÄLYÖNTI</span><b id="charge-label">0 %</b>
+          </div>
+          <div
+            class="charge-track"
+            role="progressbar"
+            aria-label="Kipinän lataus"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            aria-valuenow="0"
+            id="charge-meter"
+          >
+            <i id="charge-fill"></i>
+          </div>
+          <button id="spark" disabled>Viritä kipinä ✦</button>
+        </div>
+        <p class="hint" id="status" aria-live="polite">
+          Liu'uta mailaa ja lähetä pallo.
+        </p>
+      </div>
+    </main>
+    <div class="overlay" id="ov">
+      <section
+        class="sheet"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="dialog-title"
+        aria-describedby="msg"
+        tabindex="-1"
+      >
+        <p class="eyebrow">PELIKULMA / ARCADE 03</p>
+        <h1 id="dialog-title">POMPPU</h1>
+        <p id="msg" class="dialog-message">
+          Pidä pallo pelissä. Riko palikat. Anna kipinän lentää.
+        </p>
+        <ol class="instructions" id="instructions">
+          <li>
+            Maila seuraa sormeasi pelikentällä tai sen alla olevassa
+            liukusäätimessä.
+          </li>
+          <li>
+            Lähetä pallo ja riko kaikki palikat. Käytössäsi on kolme palloa ja
+            kuusi kenttää.
+          </li>
+          <li>
+            Viisi palikkaosumaa lataa kipinän. Viritä se painikkeesta: seuraava
+            mailalyönti läpäisee palikoita kuuden sekunnin ajan.
+          </li>
+        </ol>
+        <div class="result" id="result" hidden>
+          <div><small>Pisteet</small><b id="result-score">0</b></div>
+          <div><small>Oma ennätys</small><b id="result-best">0</b></div>
+        </div>
+        <div class="sheet-actions">
+          <button class="primary" id="play">Aloita peli</button
+          ><button id="restart" hidden>Aloita alusta</button>
+        </div>
+        <label class="switch"
+          >Äänet ja värinä<input type="checkbox" id="sound" checked
+        /></label>
+        <details>
+          <summary>Näppäimistöohjaus</summary>
+          <p class="keyboard-help">
+            Nuolet tai A ja D liikuttavat mailaa. Välilyönti lähettää pallon, K
+            virittää kipinän, P tai Esc avaa tauon. Liukusäädintä voi käyttää
+            myös nuolinäppäimillä.
+          </p>
+        </details>
+        <a class="button-link" href="../../index.html"
+          >‹ Takaisin pelivalikkoon</a
+        >
+      </section>
+    </div>
+  </body>
+</html>

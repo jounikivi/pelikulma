@@ -2,7 +2,7 @@
   "name": "pelikulma",
   "version": "0.1.0",
   "private": true,
-  "description": "MATO ja LOISTE – selainpelejä puhelimelle ja tietokoneelle",
+  "description": "MATO, LOISTE, POMPPU ja TAIVASKIPINÄ – selainpelejä puhelimelle ja tietokoneelle",
   "type": "module",
   "engines": {
     "node": ">=22"

@@ -67,3 +67,44 @@ Nämä olivat selaimen näyttökoon vaihteluun perustuvia tarkistuksia. Fyysiste
 - Näkymä tarkistettiin 320 × 568-, 390 × 844-, 667 × 375-, 768 × 1024- ja 1024 × 768 -koossa. Tabletin kääntäminen tauottaa pelin myös silloin, kun pelikentän pikselikoko ei muutu.
 - Taskutwistin pelin päättyminen ja tulosnäkymä kokeiltiin. Vanhojen pelimuotojen ennätysavaimet säilyivät ennallaan; Taskutwistillä on erillinen avain.
 - Kosketustuntuman testaus fyysisillä laitteilla ja katkaisupalojen kerääminen kokonaisen pelisession aikana jäävät käsin pelattavaan testauslistaan. Säännöt on tarkistettu automaattitesteillä.
+
+## POMPPU
+
+- Lähetä pallo -painike aloittaa kierroksen.
+- Maila seuraa sormea, hiirtä, liukusäädintä sekä nuoli- ja A/D-näppäimiä.
+- Mailan reunaan osuva pallo lähtee vinommin kuin keskelle osuva.
+- Palikkaosumat kasvattavat pisteitä ja latausta, vahvistetut palikat kestävät kaksi tavallista osumaa.
+- Täysi kipinä voidaan virittää, seuraava mailaosuma aktivoi teholennon ja teho päättyy kuuden pelisekunnin jälkeen.
+- Pallon menetys vähentää yhden kolmesta pallosta. Kolmas menetys avaa tulosnäkymän.
+- Kaikki palikat rikkova pelaaja etenee seuraavaan kuudesta kentästä, ja viimeinen kenttä avaa voittonäkymän.
+- Tauko, välilehden vaihto ja laitteen kääntäminen pysäyttävät pelin.
+- Ennätys säilyy latauksessa ja näkyy etusivun POMPPU-kortissa.
+
+Automaattiset testit tarkistavat myös täyden pelin läpäisyn sekä tavallisella että kompaktilla kentällä. Fyysinen kosketustuntuma on tarkistettava erikseen puhelimella ja tabletilla.
+
+### POMPUN tarkistus 31.10.2026
+
+Kaikki 44 koodi- ja linkkitarkistusta sekä 16 regressiotestiä läpäistiin. Testeissä käytiin läpi myös kuuden kentän kokonainen peli sekä 360 että 540 yksikön korkuisella kentällä. Pelisimulaatio käytti tavallisia mailan ohjaus-, pallon lähetys- ja kipinän viritystoimintoja.
+
+Selaimessa kokeiltiin aloitus, pallon lähetys, liukusäädin, tauko, kolme pallon menetystä ja tulosnäkymä. Selaimessa kerätty 30 pisteen ennätys näkyi paluun ja uudelleenlatauksen jälkeen myös etusivun uudessa pelikortissa. Etusivun pelimäärä päivittyi kolmeen ja leveässä näkymässä kaikki kolme korttia näkyivät rinnakkain.
+
+## TAIVASKIPINÄ
+
+- Kaikki kolme vaikeustasoa käynnistyvät ja ennätykset pysyvät erillään.
+- Automaattinen tuli, suhteellinen sormiohjaus sekä näppäimistö toimivat.
+- Pulssi tyhjentää lähiluodit, antaa lyhyen suojan ja kuluttaa energian.
+- Aseparannus, korjaus ja energiapala toimivat, ja täysi ase/runko muuttaa kerättävän pisteiksi.
+- Neljä aaltoa ja pomotaistelu toistuvat viidellä eri alueella. Pomot käyttävät erilaisia kuvioita.
+- Alueen läpäisy avaa seuraavan alueen; viimeisen pomon tuhoaminen avaa lopetuksen.
+- Viiden runkopisteen menettäminen kuluttaa koneen; kolmas menetetty kone päättää lennon.
+- Tauko ja laitteen kääntäminen pysäyttävät toiminnan.
+- Sivun lataaminen tuo Jatka-painikkeen, joka palauttaa nykyisen alueen alun. Häviö ja voitto poistavat jatkopaikan.
+- Pelikortti avaa oikean sivun, ja normaalin tilan ennätys näkyy etusivulla.
+
+Automaattinen kampanjatesti käyttää haavoittumatonta pilottia ja vahvistaa aaltojen, aseiden, pomojen ja lopetuksen etenemisen. Ihmispelaajan läpäisy ja vaikeustasojen pelituntuma on arvioitava erikseen. Fyysisten puhelinten kosketusohjauksen testausta ei korvaa selaimen näyttökokojen vaihtaminen.
+
+### TAIVASKIPINÄN tarkistus 31.10.2026
+
+56 syntaksi- ja linkkitarkistusta sekä kaikki 24 regressiotestiä läpäistiin. Kampanjatesti eteni viiden alueen ja viiden pomotaistelun kautta voittoon haavoittumattomalla testipilotilla; erilliset testit tarkistivat runkovauriot ja kolmen koneen menettämisen.
+
+Selaimessa käynnistettiin kaikki kolme vaikeustasoa. Automaattinen tuli, ensimmäiset vihollisaallot, pisteet, liu'utettava ohjausalue, pulssi, tauko ja tallennetun lennon palauttaminen kokeiltiin. Näkymät tarkistettiin koossa 320 × 568, 390 × 844, 768 × 1024 ja 1024 × 768. Tabletin kääntäminen avasi taukovalikon. Etusivu tunnisti neljä peliä ja näytti normaalin tilan ennätyksen. Näissä selaintesteissä ei havaittu konsolivirheitä.
