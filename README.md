@@ -4,12 +4,12 @@ Pieni selainpelikokoelma puhelimelle ja tietokoneelle. Pelit on tehty HTML:llä,
 
 ## Pelit
 
-| Peli       | Idea                                                                                                            | Ohjaus                                                                          |
-| ---------- | --------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| **MATO**   | Kerää hedelmiä, kasva ja väistä törmäyksiä. Perinteinen, Arcade, Sokkelo ja Aikahaaste sekä kolme vaikeustasoa. | Ruudun suuntapainikkeet, pyyhkäisy, nuolinäppäimet tai WASD. Välilyönti: tauko. |
-| **LOISTE** | Ajoita lähtö kiertoradalta seuraavalle ennen kuin nouseva pimeys saavuttaa sinut.                               | Lennä-painike, kentän napautus tai välilyönti.                                  |
+| Peli       | Idea                                                                                                                                                | Ohjaus                                                                                            |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| **MATO**   | Kerää hedelmiä, kasva ja väistä törmäyksiä. LCD-ruudun puhelinmato: Perinteinen, Taskutwist, Arcade, Sokkelo ja Aikahaaste sekä kolme vaikeustasoa. | Puhelinnäppäimet 2/4/6/8, ruudun painikkeet, pyyhkäisy, nuolet tai WASD. 5 tai välilyönti: tauko. |
+| **LOISTE** | Ajoita lähtö kiertoradalta seuraavalle ennen kuin nouseva pimeys saavuttaa sinut.                                                                   | Lennä-painike, kentän napautus tai välilyönti.                                                    |
 
-Ennätykset tallennetaan selaimen `localStorage`-muistiin. Ne ovat selain- ja sivustokohtaisia. MATO-valikkokortti näyttää Classic / Normaali -yhdistelmän ennätyksen; muut yhdistelmät näkyvät pelin sisällä.
+Ennätykset tallennetaan selaimen `localStorage`-muistiin. Ne ovat selain- ja sivustokohtaisia. MATO-valikkokortti näyttää Perinteinen / Normaali -yhdistelmän ennätyksen; muut yhdistelmät näkyvät pelin sisällä.
 
 Puhelimella ohjaimet ovat kentän alla ja vaakanäkymässä sen vieressä. Molemmissa peleissä on taukovalikko, uudelleenaloitus ja äänten kytkin. MATO-pelin lisäasetukset löytyvät kohdasta **Asetukset ja ohjaus**.
 
@@ -22,7 +22,7 @@ Tarvitset [Node.js:n](https://nodejs.org/) version 22 tai uudemman.
 3. Avaa selaimessa **http://localhost:5173**.
 4. Sulje palvelin terminaalissa painamalla **Ctrl+C**.
 
-Erillistä `npm install` -vaihetta ei tarvita: projektilla ei ole asennettavia riippuvuuksia. Voit avata myös `index.html`-tiedoston suoraan selaimessa, mutta kehityksessä kannattaa käyttää aina samaa paikallista osoitetta, jotta tallennukset toimivat johdonmukaisesti.
+Erillistä `npm install` -vaihetta ei tarvita: projektilla ei ole asennettavia riippuvuuksia. Käytä kehityksessä paikallista palvelinta: MATO käyttää JavaScript-moduuleja, jotka eivät toimi luotettavasti suoraan tiedostona avattaessa.
 
 ## Vie projekti GitHubiin GitHub Desktopilla
 
@@ -42,7 +42,7 @@ Ohje: [projektin lisääminen GitHub Desktopilla](https://docs.github.com/en/des
 
 1. Hae muiden koneiden muutokset GitHub Desktopin **Fetch origin / Pull origin** -toiminnolla.
 2. Tee muutokset editorissa ja kokeile niitä selaimessa (`npm start`).
-3. Aja `npm run check`.
+3. Aja `npm run check` ja `npm test`.
 4. Tarkista muutokset Desktopissa ja tee selkeästi nimetty commit.
 5. Lähetä commit GitHubiin painamalla **Push origin**.
 
@@ -61,11 +61,13 @@ pelikulma/
 │   ├── mato/
 │   │   ├── index.html         Matopelin käyttöliittymä
 │   │   ├── mato.css           Matopelin ulkoasu
-│   │   └── mato.js            Matopelin toiminta ja asetukset
+│   │   ├── mato.js            Matopelin toiminta ja asetukset
+│   │   └── mato-rules.js      Liikkumisen ja Taskutwistin säännöt
 │   └── loiste/
 │       ├── index.html         Loiste-pelin sivu
 │       ├── loiste.css         Loiste-pelin ulkoasu
 │       └── loiste.js          Loiste-pelin toiminta ja asetukset
+├── tests/                     Madon sääntöjen regressiotestit
 ├── scripts/                   Paikallinen palvelin ja tarkistukset
 ├── docs/                      Kehitys- ja testausohjeet
 └── .github/                   Automaattinen tarkistus ja ilmoituspohjat
@@ -78,11 +80,13 @@ pelikulma/
 - **Valikon kortit ja tekstit:** juuren `index.html`.
 - **Uusi peli:** luo oma hakemisto `games/`-kansioon ja lisää kortti valikkoon.
 
+Taskutwistissä joka viides omena tuo X-merkillä näkyvän katkaisupalan. Sen nappaaminen kahdeksassa sekunnissa antaa 30 pistettä ja lyhentää häntää neljällä ruudulla. Madosta jää aina vähintään neljä ruutua. Perinteinen-tilassa ei ole katkaisupaloja.
+
 Katso [kehitysohje](docs/KEHITYS.md) ja [testauslista](docs/TESTAUS.md).
 
 ## Tarkistukset
 
-`npm run check` tarkistaa JavaScriptin syntaksin sekä HTML-tiedostojen paikalliset linkit, tyylitiedostot ja skriptiviittaukset. Sama tarkistus suoritetaan GitHub Actionsissa pushin ja pull requestin yhteydessä. Se ei korvaa pelaamista selaimessa.
+`npm run check` tarkistaa JavaScriptin syntaksin sekä HTML-tiedostojen paikalliset linkit, tyylitiedostot ja skriptiviittaukset. `npm test` tarkistaa madon liikkumisen, kasvun, häntätörmäykset ja katkaisupalan säännöt. Molemmat tarkistukset suoritetaan GitHub Actionsissa pushin ja pull requestin yhteydessä. Se ei korvaa pelaamista selaimessa.
 
 ## Julkaise pelattavaksi GitHub Pagesissa
 

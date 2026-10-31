@@ -10,7 +10,8 @@
     <link rel="stylesheet" href="../../assets/game-ui.css" />
     <link rel="stylesheet" href="./mato.css" />
     <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml" />
-    <script src="./mato.js" defer></script>
+    <meta name="theme-color" content="#192331" />
+    <script src="./mato.js" type="module"></script>
     <script src="../../assets/dialog.js" defer></script>
   </head>
   <body>
@@ -22,24 +23,42 @@
           aria-label="Takaisin Pelikulmaan"
           >‹ Pelit</a
         >
-        <div class="scores">
-          <div><small>PISTEET</small><b id="score">0</b></div>
-          <div><small>ENNÄTYS</small><b id="best">0</b></div>
-        </div>
+        <div class="handset-brand">PELIKULMA<small>POCKET / 01</small></div>
         <button id="pause" aria-label="Avaa taukovalikko" disabled>
           Ⅱ Tauko
         </button>
       </header>
       <div class="stage" id="stage">
-        <div id="wrap">
-          <canvas
-            id="cv"
-            aria-label="Matopelin pelikenttä. Ohjaa pyyhkäisemällä tai suuntapainikkeilla."
-          ></canvas>
+        <div id="handset">
+          <div class="speaker" aria-hidden="true">
+            <i></i><i></i><i></i><i></i><i></i>
+          </div>
+          <div class="lcd">
+            <div class="scores">
+              <div><small>PISTEET</small><b id="score">0000</b></div>
+              <span class="lcd-signal" aria-hidden="true">▂▄▆</span>
+              <div><small>ENNÄTYS</small><b id="best">0000</b></div>
+            </div>
+            <div class="lcd-status">
+              <span id="mode-label">PERINTEINEN</span
+              ><span id="lvl">TASO 1</span>
+            </div>
+            <div id="wrap">
+              <canvas
+                id="cv"
+                aria-label="Matopelin pelikenttä. Ohjaa pyyhkäisemällä tai suuntapainikkeilla."
+              ></canvas>
+            </div>
+            <p class="lcd-message" id="effect-hint" aria-live="polite">
+              SYÖ. KASVA. SELVIYDY.
+            </p>
+          </div>
+          <div class="handset-mark" aria-hidden="true">
+            M A T O <span>●</span> 01
+          </div>
         </div>
       </div>
       <div class="controls">
-        <p class="hint" id="lvl">TASO 1</p>
         <div id="arcade-controls" hidden>
           <div id="en" aria-label="Kykyjen energia"><i id="eni"></i></div>
           <div class="abil" id="abil">
@@ -53,13 +72,24 @@
           role="group"
           aria-label="Madon suuntapainikkeet"
         >
-          <button data-dir="up" aria-label="Ylös">↑</button
-          ><button data-dir="left" aria-label="Vasemmalle">←</button
-          ><button data-dir="down" aria-label="Alas">↓</button
-          ><button data-dir="right" aria-label="Oikealle">→</button>
+          <button data-dir="up" aria-label="Ylös">
+            <b>2</b><small>↑ ABC</small>
+          </button>
+          <button data-dir="left" aria-label="Vasemmalle">
+            <b>4</b><small>← GHI</small>
+          </button>
+          <button id="key-pause" aria-label="Tauko näppäimellä 5" disabled>
+            <b>5</b><small>Ⅱ TAUKO</small>
+          </button>
+          <button data-dir="right" aria-label="Oikealle">
+            <b>6</b><small>MNO →</small>
+          </button>
+          <button data-dir="down" aria-label="Alas">
+            <b>8</b><small>TUV ↓</small>
+          </button>
         </div>
         <p class="hint" id="control-hint">
-          Pyyhkäise pelikenttää tai käytä nuolia.
+          Pyyhkäise tai ohjaa näppäimillä 2 · 4 · 6 · 8.
         </p>
       </div>
     </main>
@@ -72,11 +102,11 @@
         aria-describedby="msg"
         tabindex="-1"
       >
-        <p class="eyebrow">PELIKULMA / MATO</p>
+        <p class="eyebrow">PELIKULMA POCKET / 01</p>
         <h1 id="dialog-title">MATO</h1>
         <p id="msg" class="dialog-message">
-          Kerää hedelmiä ja väistä törmäyksiä. Ohjaa pyyhkäisemällä tai ruudun
-          nuolilla.
+          Vanhan puhelimen fiilis, vielä yksi yritys. Valitse tuttu klassikko
+          tai oma Taskutwistimme.
         </p>
         <div class="result" id="result" hidden>
           <div><small>Pisteet</small><b id="result-score">0</b></div>
@@ -87,18 +117,29 @@
             <legend>Valitse pelimuoto</legend>
             <div class="grid" id="modes">
               <button class="chip on" data-m="classic" aria-pressed="true">
-                Perinteinen<small>Kerää ja kasva</small>
+                Perinteinen<small>Se tuttu matopeli</small>
               </button>
-              <button class="chip" data-m="arcade" aria-pressed="false">
-                Arcade<small>Viholliset ja kyvyt</small>
-              </button>
-              <button class="chip" data-m="maze" aria-pressed="false">
-                Sokkelo<small>Väistä myös esteitä</small>
-              </button>
-              <button class="chip" data-m="time" aria-pressed="false">
-                Aikahaaste<small>90 sekuntia</small>
+              <button class="chip" data-m="twist" aria-pressed="false">
+                Taskutwist<small>Katkaise häntä, jatka pidempään</small>
               </button>
             </div>
+            <p class="mode-help" id="mode-help">
+              Syö omenoita, kasva ja väistä seiniä sekä omaa häntääsi.
+            </p>
+            <details class="extra-modes">
+              <summary>Lisää pelimuotoja</summary>
+              <div class="grid">
+                <button class="chip" data-m="arcade" aria-pressed="false">
+                  Arcade<small>Viholliset ja kyvyt</small>
+                </button>
+                <button class="chip" data-m="maze" aria-pressed="false">
+                  Sokkelo<small>Väistä myös esteitä</small>
+                </button>
+                <button class="chip" data-m="time" aria-pressed="false">
+                  Aikahaaste<small>90 sekuntia</small>
+                </button>
+              </div>
+            </details>
           </fieldset>
         </div>
         <div class="sheet-actions">
@@ -134,8 +175,9 @@
                 checked
             /></label>
             <p>
-              Pyyhkäise pelikentällä haluamaasi suuntaan. Tietokoneella: nuolet
-              tai WASD, välilyönti tauottaa. Arcaden kyvyt: 1 ja 2.
+              Ohjaa näppäimillä 2, 4, 6 ja 8, nuolilla tai WASD:llä. Myös
+              pyyhkäisy toimii. Näppäin 5 tai välilyönti tauottaa. Arcaden
+              kyvyt: 1 ja 3.
             </p>
           </div>
         </details>

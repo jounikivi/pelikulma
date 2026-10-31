@@ -40,3 +40,11 @@ Pystyasennossa ohjaimet ovat kentän alla. Vähintään 560 pikseliä leveässä
 MATOssa suuntapainikkeet voi piilottaa asetuksista. Pyyhkäisyt käsitellään vain pelikentällä, jotta asetuksia voi vierittää normaalisti. Pelimuoto, vaikeus, äänet, seinien läpi kulkeminen ja painikkeiden näkyvyys tallentuvat avaimeen `pelikulma-mato-settings`.
 
 LOISTEessa valikot ja pisteet ovat HTML:ää ja pelikenttä Canvasia. Ensimmäinen lähtö käynnistää nousevan pimeyden. Tauko pysäyttää simulaation, ja näkyvyysmuutos tauottaa pelin automaattisesti. Ääniasetus tallentuu avaimeen `pelikulma-loiste-sound`.
+
+## MATO Pocket ja Taskutwist
+
+MATO piirretään kiinteään 160 × 160 pikselin LCD-näkymään. Ruutu skaalautuu ilman pehmennystä. Puhelimen kuori, pistelaskuri ja 2/4/5/6/8-näppäimet ovat HTML:ää ja CSS:ää.
+
+Pelimuoto `twist` käyttää omaa ennätysavainta `mato2-twist-<vaikeus>`. Vanhojen pelimuotojen avaimet säilyvät. Katkaisupala ilmestyy joka viidennestä omenasta, on näkyvissä kahdeksan sekuntia ja antaa 30 pistettä. Se ei kasvata matoa, vaan poistaa enintään neljä häntäruutua; vähimmäispituus on neljä.
+
+Liikkuminen ja törmäyksen keskeinen häntäsääntö on erotettu moduuliin `games/mato/mato-rules.js`. Suorita regressiotestit komennolla `npm test`. Peli käyttää ES-moduuleja, joten käynnistä se palvelimella (`npm start`) tai julkaistulta sivulta.

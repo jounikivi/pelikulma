@@ -11,8 +11,12 @@ Aja `npm run check`. Käynnistä sitten `npm start` ja käy läpi alla olevat ko
 
 ## MATO
 
-- Kaikki neljä pelimuotoa käynnistyvät ja kolme vaikeustasoa toimivat.
-- Nuolinäppäimet, WASD, pyyhkäisy ja ruudun suuntapainikkeet ohjaavat matoa.
+- Kaikki viisi pelimuotoa käynnistyvät ja kolme vaikeustasoa toimivat.
+- Näppäimet 2/4/6/8, nuolinäppäimet, WASD, pyyhkäisy ja ruudun suuntapainikkeet ohjaavat matoa.
+- Näppäin 5 avaa taukovalikon.
+- Taskutwistissä joka viides omena tuo katkaisupalan, joka antaa 30 pistettä ja lyhentää häntää enintään neljällä ruudulla.
+- Katkaisupalan kahdeksan sekunnin aika ei kulu tauolla.
+- Perinteisessä tilassa katkaisupaloja ei tule.
 - Suuntapainikkeiden piilottaminen ja asetusten tallentuminen toimivat.
 - Hedelmä kasvattaa matoa ja pisteitä.
 - Seinään ja omaan vartaloon osuminen päättää pelin.
@@ -55,3 +59,11 @@ Paikallisessa selaintestissä käytettiin näyttökokoja 320 × 568, 390 × 844,
 - Näissä selaintesteissä ei havaittu konsolivirheitä. `npm run check` läpäisi 25 syntaksi- ja linkkitarkistusta.
 
 Nämä olivat selaimen näyttökoon vaihteluun perustuvia tarkistuksia. Fyysisten puhelinten ja tablettien kosketustuntumaa, selainten ylä- ja alapalkkeja tai kaikkia pelisääntöjä ei testattu kattavasti.
+
+## Pocket-version tarkistus 31.10.2026
+
+- `npm test`: viisi regressiotestiä läpäistiin. Ne kattavat kasvun, vapautuvan häntäruudun, hännän katkaisun, vähimmäispituuden ja bonusvälin.
+- Kaikkien viiden pelimuodon aloitus sekä tauko kokeiltiin selaimessa. Numeronäppäimillä ohjaus ja 5-näppäimen tauko kokeiltiin myös painikkeen ollessa kohdistettuna.
+- Näkymä tarkistettiin 320 × 568-, 390 × 844-, 667 × 375-, 768 × 1024- ja 1024 × 768 -koossa. Tabletin kääntäminen tauottaa pelin myös silloin, kun pelikentän pikselikoko ei muutu.
+- Taskutwistin pelin päättyminen ja tulosnäkymä kokeiltiin. Vanhojen pelimuotojen ennätysavaimet säilyivät ennallaan; Taskutwistillä on erillinen avain.
+- Kosketustuntuman testaus fyysisillä laitteilla ja katkaisupalojen kerääminen kokonaisen pelisession aikana jäävät käsin pelattavaan testauslistaan. Säännöt on tarkistettu automaattitesteillä.

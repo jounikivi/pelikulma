@@ -1,13 +1,14 @@
+import { advanceSnake, wouldHitSelf, bonusDue } from "./mato-rules.js";
+
 (() => {
   "use strict";
   /* ===== CONFIG ===== */
   const CFG = {
     N: 20,
-    baseMs: { easy: 170, normal: 130, hard: 95 },
-    minMs: 62,
-    speedUpPerLevel: 7,
+    baseMs: { easy: 200, normal: 160, hard: 115 },
+    minMs: 80,
+    speedUpPerLevel: 6,
     fruitsPerLevel: 5,
-    bonusEvery: 6,
     bonusLife: 8, // s
     enemyEvery: 4,
     enemyMax: 4,
@@ -18,7 +19,6 @@
     slowSecs: 5.5,
     timeAttack: 90,
     mazeSafe: 6,
-    shakeAmt: 7,
   };
 
   const $ = (id) => document.getElementById(id);
@@ -40,16 +40,7 @@
     state = "menu",
     sound = true,
     wrap = false;
-  let snake,
-    dir,
-    queue,
-    food,
-    bonus,
-    bonusT,
-    obstacles,
-    enemies,
-    popped,
-    prevHead;
+  let snake, dir, queue, food, bonus, bonusT, obstacles, enemies;
   let score,
     level,
     eaten,
@@ -59,23 +50,55 @@
     slowUntil,
     acc,
     last = 0;
-  let parts = [],
-    shake = 0,
-    T = 0,
-    size = 0;
+  const size = N * 8;
+  let displaySize = 0,
+    notice = "",
+    noticeUntil = 0;
+  const MODES = {
+    classic: {
+      name: "PERINTEINEN",
+      help: "Syö omenoita, kasva ja väistä seiniä sekä omaa häntääsi.",
+    },
+    twist: {
+      name: "TASKUTWIST",
+      help: "Joka viides omena tuo katkaisupalan (X). Nappaa se 8 sekunnissa: +30 pistettä ja neljä häntäruutua pois. Vähintään neljä ruutua jää.",
+    },
+    arcade: {
+      name: "ARCADE",
+      help: "Kerää energiaa ja väistä liikkuvia vihollisia. Kilpi ja hidastus auttavat selviytymään.",
+    },
+    maze: {
+      name: "SOKKELO",
+      help: "Tuttu mato, mutta reitillä on myös seiniä. Sokkelot vaihtuvat tasojen mukana.",
+    },
+    time: {
+      name: "AIKAHAASTE",
+      help: "Kuinka monta pistettä keräät 90 sekunnissa? Törmäys päättää tämänkin pelin.",
+    },
+  };
+  function text(id, value) {
+    if ($(id).textContent !== String(value)) $(id).textContent = value;
+  }
 
-  /* ===== Layout ===== */
+  /* The LCD is drawn at a fixed pixel resolution and scaled without smoothing. */
   function layout() {
-    const stage = $("stage");
+    const stage = $("stage"),
+      handset = $("handset");
+    const widthOverhead = handset.offsetWidth - $("wrap").clientWidth;
+    const heightOverhead = handset.offsetHeight - $("wrap").clientHeight;
     const bs = Math.max(
       1,
-      Math.floor(Math.min(stage.clientWidth, stage.clientHeight, 560)),
+      Math.floor(
+        Math.min(
+          stage.clientWidth - widthOverhead,
+          stage.clientHeight - heightOverhead,
+          480,
+        ),
+      ),
     );
+    if (displaySize && displaySize !== bs && state === "play") pause();
+    displaySize = bs;
     document.documentElement.style.setProperty("--bs", bs + "px");
-    const dpr = Math.min(devicePixelRatio || 1, 2.5);
-    const nextSize = Math.round(bs * dpr);
-    if (size && size !== nextSize && state === "play") pause();
-    size = nextSize;
     if (cv.width !== size) {
       cv.width = size;
       cv.height = size;
@@ -88,7 +111,7 @@
     const prefs = JSON.parse(
       localStorage.getItem("pelikulma-mato-settings") || "{}",
     );
-    if (["classic", "arcade", "maze", "time"].includes(prefs.mode))
+    if (["classic", "twist", "arcade", "maze", "time"].includes(prefs.mode))
       mode = prefs.mode;
     if (["easy", "normal", "hard"].includes(prefs.diff)) diff = prefs.diff;
     if (typeof prefs.sound === "boolean") sound = prefs.sound;
@@ -124,8 +147,13 @@
     $("wrp").checked = wrap;
     $("dpad").hidden = !$("show-dpad").checked;
     $("control-hint").textContent = $("show-dpad").checked
-      ? "Pyyhkäise pelikenttää tai käytä nuolia."
-      : "Pyyhkäise kenttää. Tietokoneella: nuolet tai WASD.";
+      ? "Pyyhkäise tai ohjaa näppäimillä 2 · 4 · 6 · 8."
+      : "Pyyhkäise kenttää tai käytä näppäimiä 2, 4, 6 ja 8.";
+    text("mode-help", MODES[mode].help);
+    document.querySelector(".extra-modes").open = ![
+      "classic",
+      "twist",
+    ].includes(mode);
   }
 
   /* ===== Storage / audio ===== */
@@ -205,9 +233,8 @@
     food = null;
     bonus = null;
     bonusT = 0;
-    popped = null;
-    prevHead = { ...snake[0] };
-    parts = [];
+    notice = "";
+    noticeUntil = 0;
     score = 0;
     level = 1;
     eaten = 0;
@@ -255,8 +282,9 @@
   }
 
   function ui() {
-    $("score").textContent = score;
-    $("best").textContent = Math.max(score, best());
+    text("score", String(score).padStart(4, "0"));
+    text("best", String(Math.max(score, best())).padStart(4, "0"));
+    text("mode-label", MODES[mode].name);
     $("lvl").textContent =
       mode === "time"
         ? Math.ceil(Math.max(0, CFG.timeAttack - elapsed)) + " s"
@@ -264,6 +292,7 @@
     const ar = mode === "arcade";
     $("arcade-controls").hidden = !ar;
     $("pause").disabled = state !== "play";
+    $("key-pause").disabled = state !== "play";
     document
       .querySelectorAll("[data-dir]")
       .forEach((button) => (button.disabled = state !== "play"));
@@ -272,8 +301,20 @@
       !ar || state !== "play" || energy < CFG.shieldCost || shield;
     $("slow").disabled = !ar || state !== "play" || energy < CFG.slowCost;
     $("shield").textContent = shield
-      ? "🛡 Kilpi aktiivinen"
-      : `🛡 Kilpi (${CFG.shieldCost})`;
+      ? "Kilpi aktiivinen"
+      : `Kilpi (${CFG.shieldCost})`;
+    text(
+      "effect-hint",
+      mode === "twist"
+        ? elapsed < noticeUntil
+          ? notice
+          : bonus
+            ? `X KATKAISUPALA ${Math.ceil(bonusT)} s`
+            : `KATKAISUPALA ${5 - (eaten % 5)} OMENAN PÄÄSTÄ`
+        : mode === "arcade"
+          ? `ENERGIA ${energy}/100`
+          : "SYÖ. KASVA. SELVIYDY.",
+    );
   }
 
   function show(title, msg, btn) {
@@ -302,10 +343,9 @@
     if (state !== "play") return;
     state = "over";
     saveBest();
-    shake = CFG.shakeAmt * 1.6;
     beep(160, 0.35, "sawtooth", 0.06);
     buzz(120);
-    burst(snake[0], 36, "#ff4f9a", 5);
+
     setTimeout(() => {
       if (state === "over") show("Peli päättyi", msg, "Pelaa uudelleen");
     }, 650);
@@ -332,30 +372,13 @@
     if (queue.length < 2) queue.push({ x, y });
   }
 
-  function burst(p, n, color, sp = 3) {
-    for (let i = 0; i < n; i++) {
-      const a = Math.random() * 6.283,
-        s = (0.3 + Math.random()) * sp;
-      parts.push({
-        x: p.x + 0.5,
-        y: p.y + 0.5,
-        vx: Math.cos(a) * s,
-        vy: Math.sin(a) * s,
-        l: 1,
-        c: color,
-      });
-    }
-  }
-
   // palauttaa true jos törmäys jäi voimaan (peli päättyi)
   function hit(enemy) {
     if (mode === "arcade" && shield) {
       shield = false;
-      shake = CFG.shakeAmt;
       beep(240, 0.15);
       buzz(40);
       if (enemy) {
-        burst(enemy.p, 16, "#b678ff");
         enemies = enemies.filter((e) => e !== enemy);
       }
       ui();
@@ -394,12 +417,12 @@
       next.y = (next.y + N) % N;
     }
 
-    const grow = same(next, food) || same(next, bonus);
-    const body = snake.slice(0, grow ? snake.length : snake.length - 1);
+    const cutting = mode === "twist" && same(next, bonus);
+    const grow = same(next, food) || (same(next, bonus) && !cutting);
     const en = enemies.find((e) => same(e.p, next));
     if (
       !inside(next) ||
-      body.some((p) => same(p, next)) ||
+      wouldHitSelf(snake, next, grow) ||
       obstacles.some((p) => same(p, next)) ||
       en
     ) {
@@ -407,8 +430,8 @@
       if (!en) return; // kilpi imaisi törmäyksen seinään: pysy paikallaan
     }
 
-    prevHead = { ...h };
-    snake.unshift(next);
+    const previousLength = snake.length;
+    snake = advanceSnake(snake, next, { grow, cut: cutting ? 4 : 0 });
 
     if (same(next, food)) {
       score += 10;
@@ -416,7 +439,7 @@
       energy = Math.min(100, energy + 12);
       beep(620, 0.06);
       buzz(8);
-      burst(next, 12, "#3dffb0");
+
       food = null;
       if (eaten % CFG.fruitsPerLevel === 0) {
         level++;
@@ -431,12 +454,11 @@
         const p = emptyCell(5);
         if (p) enemies.push({ p, d: DIRS.left, t: 0 });
       }
-      if (mode !== "classic" && eaten % CFG.bonusEvery === 0) {
+      if (bonusDue(mode, eaten)) {
         bonus = emptyCell();
         bonusT = CFG.bonusLife;
       }
       food = emptyCell();
-      popped = snake[snake.length - 1];
       if (!food) {
         finish("Täytit koko kentän!");
         return;
@@ -445,18 +467,21 @@
       score += 30;
       energy = Math.min(100, energy + 25);
       bonus = null;
+      if (cutting) {
+        const removed = previousLength - snake.length;
+        notice = removed
+          ? `HÄNTÄ -${removed} / +30 PISTETTÄ`
+          : "+30 / HÄNTÄ JO LYHYT";
+        noticeUntil = elapsed + 2;
+      }
       beep(820, 0.12);
       buzz(15);
-      burst(next, 18, "#ffd36b", 4);
-      popped = snake[snake.length - 1];
-    } else popped = snake.pop();
+    }
 
     if (mode === "arcade") {
       moveEnemies();
-      const hd = snake[0];
       const en2 = enemies.find((e) => snake.some((s) => same(s, e.p))); // vihollinen liikkui madon päälle
       if (en2 && hit(en2)) return;
-      void hd;
     }
     ui();
   }
@@ -486,222 +511,90 @@
     ui();
   }
 
-  /* ===== Rendering ===== */
-  function roundRect(x, y, w, h, r) {
-    ctx.beginPath();
-    ctx.roundRect ? ctx.roundRect(x, y, w, h, r) : ctx.rect(x, y, w, h);
-  }
-
-  function draw(alpha) {
-    const u = size / N;
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    const g = ctx.createLinearGradient(0, 0, size, size);
-    g.addColorStop(0, "#0b1424");
-    g.addColorStop(1, "#0a0f1c");
-    ctx.fillStyle = g;
+  /* ===== Monochrome, deliberately stepped LCD rendering ===== */
+  function draw() {
+    const u = 8,
+      ink = "#283b20",
+      mid = "#607847",
+      glass = "#a7b681";
+    ctx.imageSmoothingEnabled = false;
+    ctx.fillStyle = glass;
     ctx.fillRect(0, 0, size, size);
-
-    const sx = (Math.random() - 0.5) * shake * u * 0.12,
-      sy = (Math.random() - 0.5) * shake * u * 0.12;
-    ctx.translate(sx, sy);
-
-    // ruudukko
-    ctx.fillStyle = "rgba(120,160,220,.10)";
+    ctx.fillStyle = "#9eaf79";
     for (let y = 0; y < N; y++)
-      for (let x = 0; x < N; x++) {
-        ctx.beginPath();
-        ctx.arc((x + 0.5) * u, (y + 0.5) * u, u * 0.045, 0, 6.283);
-        ctx.fill();
-      }
-
-    // seinät (jos ei läpikulkua)
+      for (let x = 0; x < N; x++) ctx.fillRect(x * u + 3, y * u + 3, 1, 1);
     if (!wrap) {
-      ctx.strokeStyle = "rgba(255,79,154,.25)";
-      ctx.lineWidth = u * 0.12;
-      ctx.strokeRect(u * 0.06, u * 0.06, size - u * 0.12, size - u * 0.12);
+      ctx.strokeStyle = mid;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(0.5, 0.5, size - 1, size - 1);
     }
-
-    // esteet
-    for (const p of obstacles) {
-      ctx.fillStyle = "#1c2a44";
-      roundRect(
-        p.x * u + u * 0.07,
-        p.y * u + u * 0.07,
-        u * 0.86,
-        u * 0.86,
-        u * 0.2,
-      );
-      ctx.fill();
-      ctx.strokeStyle = "rgba(74,216,255,.35)";
-      ctx.lineWidth = u * 0.05;
-      ctx.stroke();
+    for (const cell of obstacles) {
+      ctx.fillStyle = mid;
+      ctx.fillRect(cell.x * u + 1, cell.y * u + 1, 6, 6);
+      ctx.fillStyle = ink;
+      ctx.fillRect(cell.x * u + 2, cell.y * u + 2, 4, 4);
     }
-
-    // hedelmät
-    const pulse = 1 + Math.sin(T * 6) * 0.08;
-    const orb = (p, c1, c2, r) => {
-      const cx = (p.x + 0.5) * u,
-        cy = (p.y + 0.5) * u;
-      ctx.shadowColor = c1;
-      ctx.shadowBlur = u * 0.9;
-      const rg = ctx.createRadialGradient(
-        cx - r * 0.3,
-        cy - r * 0.3,
-        r * 0.1,
-        cx,
-        cy,
-        r,
-      );
-      rg.addColorStop(0, c2);
-      rg.addColorStop(1, c1);
-      ctx.fillStyle = rg;
-      ctx.beginPath();
-      ctx.arc(cx, cy, r, 0, 6.283);
-      ctx.fill();
-      ctx.shadowBlur = 0;
-    };
-    if (food) orb(food, "#ff4f9a", "#ffd0e4", u * 0.32 * pulse);
+    if (food) {
+      const x = food.x * u,
+        y = food.y * u;
+      ctx.fillStyle = ink;
+      ctx.fillRect(x + 2, y + 3, 4, 4);
+      ctx.fillRect(x + 1, y + 4, 6, 2);
+      ctx.fillRect(x + 4, y + 1, 1, 2);
+    }
     if (bonus) {
-      const frac = bonusT / CFG.bonusLife;
-      if (frac > 0.3 || Math.sin(T * 18) > 0) {
-        orb(bonus, "#ffb938", "#fff2b0", u * 0.38 * pulse);
-        ctx.strokeStyle = "rgba(255,211,107,.8)";
-        ctx.lineWidth = u * 0.08;
-        ctx.beginPath();
-        ctx.arc(
-          (bonus.x + 0.5) * u,
-          (bonus.y + 0.5) * u,
-          u * 0.5,
-          -Math.PI / 2,
-          -Math.PI / 2 + 6.283 * frac,
-        );
-        ctx.stroke();
+      const x = bonus.x * u,
+        y = bonus.y * u;
+      ctx.strokeStyle = ink;
+      ctx.strokeRect(x + 0.5, y + 0.5, 7, 7);
+      ctx.fillStyle = ink;
+      if (mode === "twist") {
+        for (let i = 0; i < 4; i++) {
+          ctx.fillRect(x + 2 + i, y + 2 + i, 1, 1);
+          ctx.fillRect(x + 5 - i, y + 2 + i, 1, 1);
+        }
+      } else {
+        ctx.fillRect(x + 3, y + 2, 2, 4);
+        ctx.fillRect(x + 2, y + 3, 4, 2);
       }
+      ctx.fillStyle = mid;
+      ctx.fillRect(x, y + 7, Math.ceil((8 * bonusT) / CFG.bonusLife), 1);
     }
-
-    // viholliset
-    for (const e of enemies) {
-      const cx = (e.p.x + 0.5) * u,
-        cy = (e.p.y + 0.5) * u,
-        r = u * 0.42;
-      ctx.shadowColor = "#b678ff";
-      ctx.shadowBlur = u * 0.8;
-      ctx.fillStyle = "#8a4dff";
-      ctx.beginPath();
-      ctx.moveTo(cx, cy - r);
-      ctx.lineTo(cx + r, cy);
-      ctx.lineTo(cx, cy + r);
-      ctx.lineTo(cx - r, cy);
-      ctx.closePath();
-      ctx.fill();
-      ctx.shadowBlur = 0;
-      ctx.fillStyle = "#fff";
-      ctx.fillRect(cx - r * 0.4, cy - r * 0.12, r * 0.25, r * 0.25);
-      ctx.fillRect(cx + r * 0.15, cy - r * 0.12, r * 0.25, r * 0.25);
+    for (const enemy of enemies) {
+      const x = enemy.p.x * u,
+        y = enemy.p.y * u;
+      ctx.fillStyle = ink;
+      ctx.fillRect(x + 2, y + 1, 4, 6);
+      ctx.fillRect(x + 1, y + 2, 6, 4);
+      ctx.fillStyle = glass;
+      ctx.fillRect(x + 2, y + 3, 1, 1);
+      ctx.fillRect(x + 5, y + 3, 1, 1);
     }
-
-    // mato: pehmeä interpolointi
-    const lerp = (a, b) => {
-      if (Math.abs(a.x - b.x) > 1 || Math.abs(a.y - b.y) > 1)
-        return { x: b.x, y: b.y };
-      return { x: a.x + (b.x - a.x) * alpha, y: a.y + (b.y - a.y) * alpha };
-    };
-    const hp = lerp(prevHead, snake[0]);
-    const tl = snake[snake.length - 1];
-    const tp = popped ? lerp(popped, tl) : tl;
-    const pts = [hp, ...snake.slice(1, -1), tp];
-    if (snake.length > 1) {
-      const path = () => {
-        ctx.beginPath();
-        pts.forEach((p, i) => {
-          const x = (p.x + 0.5) * u,
-            y = (p.y + 0.5) * u;
-          i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
-        });
-      };
-      ctx.lineCap = "round";
-      ctx.lineJoin = "round";
-      const sg = ctx.createLinearGradient(
-        hp.x * u,
-        hp.y * u,
-        tp.x * u,
-        tp.y * u,
-      );
-      sg.addColorStop(0, "#3dffb0");
-      sg.addColorStop(1, "#2a9d8f");
-      ctx.shadowColor = "#3dffb0";
-      ctx.shadowBlur = u * 0.9;
-      ctx.strokeStyle = sg;
-      ctx.lineWidth = u * 0.74;
-      path();
-      ctx.stroke();
-      ctx.shadowBlur = 0;
-      ctx.strokeStyle = "rgba(255,255,255,.22)";
-      ctx.lineWidth = u * 0.22;
-      path();
-      ctx.stroke();
-    }
-    // pää + silmät
-    const hx = (hp.x + 0.5) * u,
-      hy = (hp.y + 0.5) * u;
-    ctx.fillStyle = "#7dffd0";
-    ctx.beginPath();
-    ctx.arc(hx, hy, u * 0.42, 0, 6.283);
-    ctx.fill();
-    if (shield) {
-      ctx.strokeStyle = "#ffd36b";
-      ctx.lineWidth = u * 0.1;
-      ctx.shadowColor = "#ffd36b";
-      ctx.shadowBlur = u * 0.6;
-      ctx.beginPath();
-      ctx.arc(hx, hy, u * 0.65, 0, 6.283);
-      ctx.stroke();
-      ctx.shadowBlur = 0;
-    }
+    ctx.fillStyle = ink;
+    for (const cell of snake)
+      ctx.fillRect(cell.x * u + 1, cell.y * u + 1, 6, 6);
+    const head = snake[0],
+      x = head.x * u,
+      y = head.y * u;
+    ctx.fillStyle = glass;
     const px = -dir.y,
       py = dir.x;
-    ctx.fillStyle = "#04201a";
-    for (const s of [-1, 1]) {
-      ctx.beginPath();
-      ctx.arc(
-        hx + dir.x * u * 0.14 + px * s * u * 0.17,
-        hy + dir.y * u * 0.14 + py * s * u * 0.17,
-        u * 0.08,
-        0,
-        6.283,
+    for (const side of [-1, 1])
+      ctx.fillRect(
+        Math.round(x + 3.5 + dir.x * 2 + px * side * 1.5),
+        Math.round(y + 3.5 + dir.y * 2 + py * side * 1.5),
+        1,
+        1,
       );
-      ctx.fill();
-    }
-
-    // partikkelit
-    for (const p of parts) {
-      ctx.globalAlpha = Math.max(0, p.l);
-      ctx.fillStyle = p.c;
-      ctx.beginPath();
-      ctx.arc(p.x * u, p.y * u, u * 0.09 * p.l + 1, 0, 6.283);
-      ctx.fill();
-    }
-    ctx.globalAlpha = 1;
-
-    // hidastuksen sävy
-    if (mode === "arcade" && performance.now() < slowUntil) {
-      ctx.fillStyle = "rgba(74,216,255,.07)";
-      ctx.fillRect(0, 0, size, size);
+    if (shield) {
+      ctx.strokeStyle = mid;
+      ctx.strokeRect(x + 0.5, y + 0.5, 7, 7);
     }
   }
 
   function frame(now) {
     const dt = Math.min(60, now - (last || now));
     last = now;
-    T += dt / 1000;
-    shake = Math.max(0, shake - dt * 0.03);
-    for (const p of parts) {
-      p.x += (p.vx * dt) / 1000;
-      p.y += (p.vy * dt) / 1000;
-      p.l -= dt / 700;
-    }
-    parts = parts.filter((p) => p.l > 0);
-
     if (state === "play") {
       elapsed += dt / 1000;
       if (bonus) {
@@ -720,7 +613,7 @@
         c++;
       }
     }
-    draw(state === "play" ? Math.min(1, acc / speed(now)) : 1);
+    draw();
     requestAnimationFrame(frame);
   }
 
@@ -730,26 +623,40 @@
     ArrowDown: "down",
     ArrowLeft: "left",
     ArrowRight: "right",
+    2: "up",
+    4: "left",
+    6: "right",
+    8: "down",
     w: "up",
     s: "down",
     a: "left",
     d: "right",
   };
   addEventListener("keydown", (e) => {
-    if (e.key !== "Escape" && e.target.closest("button,input,summary,a"))
+    const interactive = e.target.closest("button,input,summary,a");
+    const shortcut =
+      KM[e.key] ||
+      KM[e.key.toLowerCase()] ||
+      ["5", "p", "1", "3"].includes(e.key);
+    if (e.key !== "Escape" && interactive && !(state === "play" && shortcut))
       return;
-    if (e.repeat && [" ", "Escape", "p", "Enter"].includes(e.key)) return;
+    if (e.repeat && [" ", "Escape", "p", "Enter", "5"].includes(e.key)) return;
     const d = KM[e.key] || KM[e.key.toLowerCase()];
     if (d) {
       e.preventDefault();
       turn(DIRS[d].x, DIRS[d].y);
-    } else if (e.key === "p" || e.key === " " || e.key === "Escape") {
+    } else if (
+      e.key === "p" ||
+      e.key === " " ||
+      e.key === "Escape" ||
+      e.key === "5"
+    ) {
       e.preventDefault();
       pause();
     } else if (e.key === "Enter" && state !== "play") {
       state === "pause" ? pause() : start();
     } else if (e.key === "1") ability("shield");
-    else if (e.key === "2") ability("slow");
+    else if (e.key === "3") ability("slow");
   });
 
   // Listen only on the canvas, so swiping settings scrolls the dialog normally.
@@ -790,7 +697,7 @@
     reset();
     show(
       "MATO",
-      "Kerää hedelmiä ja väistä törmäyksiä. Ohjaa pyyhkäisemällä tai ruudun nuolilla.",
+      "Vanhan puhelimen fiilis, vielä yksi yritys. Valitse tuttu klassikko tai oma Taskutwistimme.",
       "Aloita peli",
     );
     ui();
@@ -829,10 +736,14 @@
   $("restart").onclick = start;
   $("change-mode").onclick = menu;
   $("pause").onclick = pause;
+  $("key-pause").onclick = pause;
   $("shield").onclick = () => ability("shield");
   $("slow").onclick = () => ability("slow");
   document.addEventListener("visibilitychange", () => {
     if (document.hidden && state === "play") pause();
+  });
+  matchMedia("(orientation: landscape)").addEventListener("change", () => {
+    if (state === "play") pause();
   });
 
   syncPreferences();
