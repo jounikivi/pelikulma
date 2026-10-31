@@ -4,12 +4,12 @@ Pieni selainpelikokoelma puhelimelle ja tietokoneelle. Pelit on tehty HTML:llä,
 
 ## Pelit
 
-| Peli             | Idea                                                                                                                                                | Ohjaus                                                                                                |
-| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| **MATO**         | Kerää hedelmiä, kasva ja väistä törmäyksiä. LCD-ruudun puhelinmato: Perinteinen, Taskutwist, Arcade, Sokkelo ja Aikahaaste sekä kolme vaikeustasoa. | Puhelinnäppäimet 2/4/6/8, ruudun painikkeet, pyyhkäisy, nuolet tai WASD. 5 tai välilyönti: tauko.     |
-| **LOISTE**       | Ajoita lähtö kiertoradalta seuraavalle ennen kuin nouseva pimeys saavuttaa sinut.                                                                   | Lennä-painike, kentän napautus tai välilyönti.                                                        |
-| **POMPPU**       | Kuusi palikanmurskauskenttää, kolme palloa ja ladattava kipinälyönti.                                                                               | Sormen tai hiiren liike, liukusäädin, nuolet tai A/D. Välilyönti lähettää pallon, K virittää kipinän. |
-| **TAIVASKIPINÄ** | Oma pystyräiskintäkampanja: viisi aluetta ja pomoa, kolme vaikeustasoa, aseparannukset ja torjuntapulssi.                                           | Liu’utus kentällä tai ohjausalueella, nuolet tai WASD. Välilyönti tai X: pulssi. P tai Esc: tauko.    |
+| Peli             | Idea                                                                                                                                                | Ohjaus                                                                                                  |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| **MATO**         | Kerää hedelmiä, kasva ja väistä törmäyksiä. LCD-ruudun puhelinmato: Perinteinen, Taskutwist, Arcade, Sokkelo ja Aikahaaste sekä kolme vaikeustasoa. | Puhelinnäppäimet 2/4/6/8, ruudun painikkeet, pyyhkäisy, nuolet tai WASD. 5 tai välilyönti: tauko.       |
+| **LOISTE**       | Ajoita lähtö kiertoradalta seuraavalle ennen kuin nouseva pimeys saavuttaa sinut.                                                                   | Lennä-painike, kentän napautus tai välilyönti.                                                          |
+| **POMPPU**       | Kuusi palikanmurskauskenttää, kolme palloa ja ladattava kipinälyönti.                                                                               | Sormen tai hiiren liike, liukusäädin, nuolet tai A/D. Välilyönti lähettää pallon, K virittää kipinän.   |
+| **TAIVASKIPINÄ** | Oma pystyräiskintäkampanja: viisi aluetta ja pomoa, kolme vaikeustasoa, aseparannukset ja torjuntapulssi.                                           | Liu’utus kentällä tai ohjausalueella, nuolet tai WASD. Välilyönti: väistö. X: pulssi. P tai Esc: tauko. |
 
 Ennätykset tallennetaan selaimen `localStorage`-muistiin. Ne ovat selain- ja sivustokohtaisia. MATO-valikkokortti näyttää Perinteinen / Normaali -yhdistelmän ennätyksen; muut yhdistelmät näkyvät pelin sisällä.
 
@@ -120,3 +120,11 @@ Ohje: [GitHub Pagesin julkaisulähteen valinta](https://docs.github.com/en/pages
 ## Lisenssi
 
 Projektille ei ole vielä valittu avoimen lähdekoodin lisenssiä. Päätä lisenssi ennen kuin tarjoat koodia muiden vapaasti käytettäväksi; pelkkä julkinen GitHub-repository ei anna yleistä käyttöoikeutta.
+
+## TAIVASKIPINÄN arcade-tuntuma
+
+Pelaaja lentää ruudun alaosassa. Normaali ja Haaste ovat yhden osuman lentoa, Rento antaa kolme runkopistettä. Koneita on kolme. Jokaisen alueen kolme suojattua väistöä käytetään painikkeella tai välilyönnillä. X käyttää erillistä torjuntapulssia.
+
+W lisää tykkejä, T nopeuttaa tulta, H avaa hajonnan ja S tuo kaksi mukana ampuvaa siipikonetta. R korjaa Rento-tilan runkoa ja E lataa pulssia. Raskaiden koneiden tuhoaminen antaa aina lisävarusteen. Koko muodostelman tuhoamisesta saa pistebonuksen. Ohitetut kevyet koneet kaartavat kerran takaisin alhaalta.
+
+Muodostelmat ovat toistettavia ja opeteltavia. Valinnainen, tähän peliin tehty chiptune-taustamusiikki löytyy valikosta. Uudet tallennukset säilyttävät varusteet ja jäljellä olevat väistöt; aiemmat jatkopaikat muunnetaan uuteen versioon.

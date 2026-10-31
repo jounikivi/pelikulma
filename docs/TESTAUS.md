@@ -96,7 +96,7 @@ Selaimessa kokeiltiin aloitus, pallon lähetys, liukusäädin, tauko, kolme pall
 - Aseparannus, korjaus ja energiapala toimivat, ja täysi ase/runko muuttaa kerättävän pisteiksi.
 - Neljä aaltoa ja pomotaistelu toistuvat viidellä eri alueella. Pomot käyttävät erilaisia kuvioita.
 - Alueen läpäisy avaa seuraavan alueen; viimeisen pomon tuhoaminen avaa lopetuksen.
-- Viiden runkopisteen menettäminen kuluttaa koneen; kolmas menetetty kone päättää lennon.
+- Normaalissa ja Haasteessa yksi osuma kuluttaa koneen; Rennossa runko kestää kolme osumaa. Kolmas menetetty kone päättää lennon.
 - Tauko ja laitteen kääntäminen pysäyttävät toiminnan.
 - Sivun lataaminen tuo Jatka-painikkeen, joka palauttaa nykyisen alueen alun. Häviö ja voitto poistavat jatkopaikan.
 - Pelikortti avaa oikean sivun, ja normaalin tilan ennätys näkyy etusivulla.
@@ -108,3 +108,18 @@ Automaattinen kampanjatesti käyttää haavoittumatonta pilottia ja vahvistaa aa
 56 syntaksi- ja linkkitarkistusta sekä kaikki 24 regressiotestiä läpäistiin. Kampanjatesti eteni viiden alueen ja viiden pomotaistelun kautta voittoon haavoittumattomalla testipilotilla; erilliset testit tarkistivat runkovauriot ja kolmen koneen menettämisen.
 
 Selaimessa käynnistettiin kaikki kolme vaikeustasoa. Automaattinen tuli, ensimmäiset vihollisaallot, pisteet, liu'utettava ohjausalue, pulssi, tauko ja tallennetun lennon palauttaminen kokeiltiin. Näkymät tarkistettiin koossa 320 × 568, 390 × 844, 768 × 1024 ja 1024 × 768. Tabletin kääntäminen avasi taukovalikon. Etusivu tunnisti neljä peliä ja näytti normaalin tilan ennätyksen. Näissä selaintesteissä ei havaittu konsolivirheitä.
+
+## Arcade-tuntuman regressiot
+
+- Väistö aktivoituu heti, suojaa 0,9 sekuntia, ei tyhjennä luoteja ja kuluttaa yhden kolmesta käyttökerrasta. Tauko pysäyttää väistön ajan. Alueen vaihto palauttaa kolme väistöä.
+- Lisätykit, tulinopeus, hajonta ja siipikoneet muuttavat näkyvää tulitusta. Täysi varustus ampuu seitsemän luotia kerralla. Osuma poistaa lisävarusteita.
+- Kevyt kone kääntyy alapuolelta takaisin kerran, ja poistuu paluun jälkeen yläreunasta. Muodostelmat toistuvat samalla tavalla uusissa peleissä.
+- Vanha tallennus palautuu, ja uusi tallennus säilyttää kaikki lisävarusteet ja väistöt.
+- Oma taustamusiikki voidaan kytkeä päälle ja pois; tauko pysäyttää uusien nuottien soiton.
+- Pelifiilis pitää vielä arvioida pelaamalla. Sääntö- ja kampanjasimulaatiot eivät todista identtistä tuntumaa C64-peliin.
+
+### Arcade-päivityksen tarkistus
+
+Kaikki 30 testiä sekä 56 koodi- ja linkkitarkistusta läpäistiin. Uudet testit varmistavat kolme välittömästi suojaavaa väistöä, täyden seitsemän laukauksen varustuksen, palautuvat koneet, muodostelmabonuksen, raskaan koneen varustepudotuksen, yhden osuman koneet ja tallennusversion muutoksen.
+
+Selaimessa kokeiltiin väistö painikkeella ja välilyönnillä, musiikkikytkin, tauko ja uuden kampanjan käynnistys. Pienen 320 × 568 -näytön painikkeet mahtuivat näkyviin ja koon vaihtaminen tablettinäkymään avasi tauon. Näissä kokeissa ei havaittu konsolivirheitä.

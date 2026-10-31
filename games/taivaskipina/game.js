@@ -6,6 +6,7 @@ import {
   createGame,
   aim,
   pulse,
+  roll,
   nextSector,
   step,
   checkpoint,
@@ -22,18 +23,23 @@ let difficulty = "normal",
   best = 0,
   saved = null,
   startPoint = null,
-  drag = null;
+  drag = null,
+  music = false,
+  beat = 0,
+  musicClock = 0;
 const keys = new Set(),
   reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
 try {
   difficulty = localStorage.getItem("taivaskipina-difficulty") || "normal";
   if (!Object.hasOwn(DIFFICULTIES, difficulty)) difficulty = "normal";
   sound = localStorage.getItem("taivaskipina-sound") !== "off";
+  music = localStorage.getItem("taivaskipina-music") === "on";
   saved = JSON.parse(localStorage.getItem("taivaskipina-save") || "null");
   if (!restore(saved)) saved = null;
 } catch {}
 g = createGame(difficulty);
 $("sound").checked = sound;
+$("music").checked = music;
 function text(id, value) {
   if ($(id).textContent !== String(value)) $(id).textContent = value;
 }
@@ -68,16 +74,16 @@ function clearPoint() {
 }
 let audio,
   lastSound = 0;
-function beep(f, d = 0.08) {
+function beep(f, d = 0.08, volume = 0.035, type = "triangle") {
   if (!sound) return;
   try {
     audio ||= new (window.AudioContext || window.webkitAudioContext)();
     if (audio.state === "suspended") audio.resume();
     const o = audio.createOscillator(),
       v = audio.createGain();
-    o.type = "triangle";
+    o.type = type;
     o.frequency.value = f;
-    v.gain.setValueAtTime(0.035, audio.currentTime);
+    v.gain.setValueAtTime(volume, audio.currentTime);
     v.gain.exponentialRampToValueAtTime(0.001, audio.currentTime + d);
     o.connect(v);
     v.connect(audio.destination);
@@ -126,9 +132,19 @@ function ui() {
     "sector",
     `${g.sector + 1}/5 ${DIFFICULTIES[g.difficulty].label.toUpperCase()}`,
   );
-  text("health", `RUNKO ${g.player.hp}/5`);
+  text("health", `RUNKO ${g.player.hp}/${g.player.maxHp}`);
   text("reserves", `${g.player.lives} KONETTA`);
-  text("weapon", "ASE " + ["", "I", "II", "III"][g.player.weapon]);
+  text(
+    "weapon",
+    "ASE " +
+      ["", "I", "II", "III"][g.player.weapon] +
+      (g.player.rapid ? " · T+" : "") +
+      (g.player.spread ? " · H+" : "") +
+      (g.player.wingmen ? " · S" : ""),
+  );
+  $("roll").disabled =
+    screen !== "game" || g.player.rolls === 0 || g.player.rollTime > 0;
+  text("roll", `Väistö ${g.player.rolls}/3 ↻`);
   const boss = g.enemies.find((e) => e.type === "boss");
   $("boss-ui").hidden = !boss;
   if (boss) {
@@ -149,9 +165,11 @@ function ui() {
   $("energy").setAttribute("aria-valuenow", String(Math.floor(g.charge)));
   text(
     "hint",
-    g.player.invincible > 0
-      ? "Suojattu hetken · ota hyvä asema."
-      : "Lähiluodit kuriin pulssilla.",
+    g.player.rollTime > 0
+      ? "Väistö suojaa · lentoa saa ohjata."
+      : g.player.invincible > 0
+        ? "Suojattu hetken · ota hyvä asema."
+        : "Säästä väistöjä tiukkaan paikkaan.",
   );
   $("area-banner").hidden = g.sectorTime > 2.5;
   text("area-banner", SECTORS[g.sector].name.toUpperCase());
@@ -184,10 +202,13 @@ function hide() {
   screen = "game";
   last = performance.now();
   $("ov").classList.add("hide");
+  queueMicrotask(() => {
+    if (screen === "game") cv.focus({ preventScroll: true });
+  });
   ui();
 }
 function start() {
-  g = createGame(difficulty, Date.now());
+  g = createGame(difficulty);
   readBest();
   savePoint();
   hide();
@@ -222,6 +243,35 @@ function firePulse() {
   }
 }
 
+function evasiveRoll() {
+  if (screen === "game" && roll(g)) {
+    beep(340, 0.15);
+    rumble();
+    ui();
+  }
+}
+const melody = [
+  64, 67, 71, 74, 71, 67, 62, 66, 69, 74, 69, 66, 60, 64, 67, 72, 67, 64, 62,
+  67, 71, 74, 76, 74, 71, 67, 66, 69, 74, 71, 67, 62,
+];
+function musicStep(dt) {
+  if (!sound || !music) return;
+  musicClock -= dt;
+  if (musicClock <= 0) {
+    musicClock = 0.16;
+    const note = melody[beat % melody.length];
+    beep(440 * 2 ** ((note - 69) / 12), 0.12, 0.009, "square");
+    if (beat % 4 === 0)
+      beep(
+        440 * 2 ** (((beat % 16 < 8 ? 40 : 43) - 69) / 12),
+        0.14,
+        0.016,
+        "triangle",
+      );
+    beat++;
+  }
+}
+
 const PLAYER = [
   ".....aa.....",
   ".....aa.....",
@@ -252,7 +302,14 @@ const TANK = [
   "vvvvvvvv",
   "..v..v..",
 ];
-function sprite(pattern, x, y, size, colors) {
+function sprite(pattern, x, y, size, colors, upward = false) {
+  ctx.save();
+  if (upward) {
+    ctx.translate(x, y);
+    ctx.rotate(Math.PI);
+    x = 0;
+    y = 0;
+  }
   for (let row = 0; row < pattern.length; row++)
     for (let col = 0; col < pattern[row].length; col++) {
       const color = colors[pattern[row][col]];
@@ -266,6 +323,7 @@ function sprite(pattern, x, y, size, colors) {
         );
       }
     }
+  ctx.restore();
 }
 function island(x, y, scale, color) {
   ctx.fillStyle = "#102f4288";
@@ -314,15 +372,27 @@ function draw() {
     ctx.fillRect(x + 12, y - 7, 32, 28);
   }
   for (const item of g.pickups) {
-    ctx.fillStyle = { weapon: "#f4d477", repair: "#9be3bd", energy: "#a3d8ed" }[
-      item.type
-    ];
+    ctx.fillStyle = {
+      weapon: "#f4d477",
+      rapid: "#f4ab91",
+      spread: "#add8e6",
+      wing: "#d1bbe6",
+      repair: "#9be3bd",
+      energy: "#a3d8ed",
+    }[item.type];
     ctx.fillRect(item.x - 9, item.y - 9, 18, 18);
     ctx.fillStyle = "#193442";
     ctx.font = "bold 12px monospace";
     ctx.textAlign = "center";
     ctx.fillText(
-      { weapon: "W", repair: "R", energy: "E" }[item.type],
+      {
+        weapon: "W",
+        rapid: "T",
+        spread: "H",
+        wing: "S",
+        repair: "R",
+        energy: "E",
+      }[item.type],
       item.x,
       item.y + 4,
     );
@@ -365,6 +435,7 @@ function draw() {
           v: e.flash > 0 ? "#fff0ca" : "#87bdad",
           s: "#344c62",
         },
+        e.pass === 1,
       );
   }
   for (const s of g.shots) {
@@ -392,7 +463,12 @@ function draw() {
         Math.PI * 2,
       );
       ctx.stroke();
-    } else if (!reduced) {
+    } else if (e.type === "formation") {
+      ctx.fillStyle = "#fff0ad";
+      ctx.font = "bold 11px monospace";
+      ctx.textAlign = "center";
+      ctx.fillText(`MUODOSTELMA +${e.points}`, 180, 280);
+    } else if (!reduced && e.type !== "roll") {
       ctx.fillStyle = e.type === "pickup" ? "#bcebc7" : "#ffe0a0";
       const t = 1 - e.life / 0.5;
       for (let i = 0; i < 8; i++) {
@@ -407,13 +483,39 @@ function draw() {
     }
   }
   ctx.globalAlpha = g.player.invincible > 0 ? 0.65 : 1;
-  sprite(PLAYER, g.player.x, g.player.y, 2.5, {
+  if (g.player.wingmen === 2)
+    for (const offset of [-27, 27])
+      sprite(
+        PLAYER,
+        Math.max(6, Math.min(W - 6, g.player.x + offset)),
+        g.player.y + 7,
+        1.7,
+        {
+          a: "#a9dfcb",
+          b: "#e5f1c3",
+          c: "#558c98",
+          d: "#8dbeb5",
+          f: "#e4ad78",
+        },
+      );
+  ctx.save();
+  ctx.translate(g.player.x, g.player.y);
+  if (g.player.rollTime > 0 && !reduced)
+    ctx.scale(
+      Math.max(
+        0.18,
+        Math.abs(Math.cos((g.player.rollTime / 0.9) * Math.PI * 2)),
+      ),
+      1,
+    );
+  sprite(PLAYER, 0, 0, 2.5, {
     a: "#f4d091",
     b: "#f9e8b6",
     c: "#4a898e",
     d: "#a9dfcb",
     f: "#ed9c6e",
   });
+  ctx.restore();
   ctx.globalAlpha = 1;
   ctx.fillStyle = "#fff";
   ctx.fillRect(g.player.x - 2, g.player.y - 2, 4, 4);
@@ -426,6 +528,7 @@ function frame(now) {
   const dt = Math.min(0.04, (now - (last || now)) / 1000);
   last = now;
   if (screen === "game") {
+    musicStep(dt);
     let x = 0,
       y = 0;
     if (keys.has("left")) x--;
@@ -439,7 +542,8 @@ function frame(now) {
     const oldScore = g.score,
       oldHp = g.player.hp,
       oldLives = g.player.lives,
-      oldWeapon = g.player.weapon;
+      oldWeapon = g.player.weapon,
+      oldFired = g.fired;
     step(g, dt);
     if (g.player.lives < oldLives || g.player.hp < oldHp) {
       beep(140, 0.2);
@@ -449,11 +553,15 @@ function frame(now) {
       beep(580, 0.04);
       lastSound = now;
     }
+    if (g.fired > oldFired && now - lastSound > 120) {
+      beep(145, 0.025, 0.008, "square");
+      lastSound = now;
+    }
     if (g.phase === "clear")
       show(
         "clear",
         "Alue vapaa!",
-        `${SECTORS[g.sector].boss} on pysäytetty. Seuraavaksi ${SECTORS[g.sector + 1].name}. Ase paranee ja runko korjaantuu yhdellä.`,
+        `${SECTORS[g.sector].boss} on pysäytetty. Seuraavaksi ${SECTORS[g.sector + 1].name}. Ase paranee, runko korjautuu ja saat kolme uutta väistöä.`,
         "Seuraava alue →",
       );
     else if (g.phase === "win") {
@@ -490,6 +598,13 @@ $("continue").onclick = resumeSaved;
 $("restart").onclick = start;
 $("pause").onclick = pause;
 $("pulse").onclick = firePulse;
+$("roll").onclick = evasiveRoll;
+$("music").onchange = () => {
+  music = $("music").checked;
+  try {
+    localStorage.setItem("taivaskipina-music", music ? "on" : "off");
+  } catch {}
+};
 document.querySelectorAll("[data-d]").forEach(
   (b) =>
     (b.onclick = () => {
@@ -558,9 +673,13 @@ addEventListener("keydown", (e) => {
     e.preventDefault();
     pause();
   }
-  if ((key === "x" || e.code === "Space") && screen === "game") {
+  if (key === "x" && screen === "game") {
     e.preventDefault();
     firePulse();
+  }
+  if (e.code === "Space" && screen === "game") {
+    e.preventDefault();
+    evasiveRoll();
   }
 });
 addEventListener("keyup", (e) => {

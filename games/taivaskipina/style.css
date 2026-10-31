@@ -253,3 +253,30 @@ canvas {
     padding: 16px;
   }
 }
+
+.ability-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.ability-buttons #roll,
+.ability-buttons #pulse {
+  font-family: inherit;
+  font-size: 11px;
+  min-height: 48px;
+  padding: 6px;
+  border-radius: 3px;
+}
+.ability-buttons #roll {
+  background: #f5d275;
+  color: #27353d;
+  box-shadow: 0 3px #8e7748;
+}
+.ability-buttons #roll:disabled {
+  opacity: 0.5;
+}
+.ability-buttons #pulse {
+  box-shadow: none;
+  background: #304f58;
+  color: #ffe3a0;
+}

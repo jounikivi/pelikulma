@@ -5,6 +5,7 @@ import {
   aim,
   step,
   pulse,
+  roll,
   hurtPlayer,
   collect,
   nextSector,
@@ -58,7 +59,7 @@ test("invulnerability prevents repeated damage; three broken hulls end the fligh
   const g = createGame();
   assert.equal(hurtPlayer(g), false);
   for (let ship = 0; ship < 3; ship++)
-    for (let hit = 0; hit < 5; hit++) {
+    for (let hit = 0; hit < g.player.maxHp; hit++) {
       g.player.invincible = 0;
       assert.equal(hurtPlayer(g), true);
     }
@@ -85,11 +86,11 @@ test("weapons and repairs cap; redundant pickups award points", () => {
   assert.equal(g.player.weapon, 3);
   assert.equal(g.score, 600);
   collect(g, { type: "repair", x: 0, y: 0 });
-  assert.equal(g.player.hp, 5);
+  assert.equal(g.player.hp, 1);
   assert.equal(g.score, 700);
-  g.player.hp = 2;
+  g.player.hp = 0;
   collect(g, { type: "repair", x: 0, y: 0 });
-  assert.equal(g.player.hp, 3);
+  assert.equal(g.player.hp, 1);
 });
 test("checkpoint is a stage-start snapshot and rejects corrupt data", () => {
   const g = createGame("hard");
@@ -141,4 +142,116 @@ test("five complete sectors, wave encounters and boss fights can reach the endin
   assert.equal(bosses, 31);
   assert.ok(g.score > 10000);
   assert.equal(nextSector(g), false);
+});
+
+test("three rolls protect immediately, keep bullets, expire and reset per sector", () => {
+  const g = createGame();
+  g.player.invincible = 0;
+  g.bullets = [{ x: 180, y: 100, vx: 0, vy: 10, r: 3 }];
+  for (let i = 0; i < 3; i++) {
+    assert.equal(roll(g), true);
+    assert.equal(hurtPlayer(g), false);
+    assert.equal(roll(g), false);
+    for (let t = 0; t < 4; t++) step(g, 0.25);
+  }
+  assert.equal(g.player.rolls, 0);
+  assert.equal(roll(g), false);
+  assert.ok(g.bullets.length > 0);
+  g.phase = "clear";
+  nextSector(g);
+  assert.equal(g.player.rolls, 3);
+});
+test("powerups create a seven-shot firewall and survive checkpoint restore", () => {
+  const g = createGame();
+  for (const type of ["weapon", "weapon", "rapid", "spread", "wing"])
+    collect(g, { type, x: 180, y: 460 });
+  step(g, 0.01);
+  assert.equal(g.shots.length, 7);
+  assert.equal(g.player.wingmen, 2);
+  const loaded = restore(checkpoint(g));
+  assert.equal(loaded.player.spread, true);
+  assert.equal(loaded.player.rapid, true);
+  assert.equal(loaded.player.wingmen, 2);
+  g.player.invincible = 0;
+  hurtPlayer(g);
+  assert.equal(g.player.lives, 2);
+  assert.equal(g.player.wingmen, 0);
+  assert.equal(g.player.weapon, 2);
+});
+test("missed formations return from below exactly once", () => {
+  const g = createGame();
+  for (let t = 0; t < 9; t++) step(g, 0.25);
+  const enemy = g.enemies.find((e) => e.type === "scout");
+  enemy.y = 590;
+  step(g, 0.01);
+  assert.equal(enemy.pass, 1);
+  assert.ok(enemy.speed < 0);
+  assert.ok(g.enemies.includes(enemy));
+  enemy.y = -45;
+  step(g, 0.01);
+  assert.equal(g.enemies.includes(enemy), false);
+  assert.equal(g.escaped, 1);
+});
+test("legacy saves migrate and normal flight uses one-hit ships", () => {
+  const g = createGame();
+  g.player.invincible = 0;
+  hurtPlayer(g);
+  assert.equal(g.player.lives, 2);
+  assert.equal(g.player.hp, 1);
+  const legacy = {
+    version: 1,
+    difficulty: "normal",
+    sector: 2,
+    score: 1000,
+    hp: 5,
+    lives: 2,
+    weapon: 2,
+    charge: 50,
+  };
+  const loaded = restore(legacy);
+  assert.equal(loaded.player.hp, 1);
+  assert.equal(loaded.player.rolls, 3);
+  assert.equal(loaded.sector, 2);
+  const easy = createGame("easy");
+  assert.equal(easy.player.maxHp, 3);
+});
+test("formations repeat consistently and stay within the lower-half flight envelope", () => {
+  const a = createGame("normal", 1),
+    b = createGame("normal", 99);
+  for (let i = 0; i < 300; i++) {
+    a.player.invincible = 100;
+    b.player.invincible = 100;
+    step(a, 0.04);
+    step(b, 0.04);
+  }
+  assert.deepEqual(a.enemies, b.enemies);
+  aim(a, 180, 0);
+  assert.equal(a.player.ty, 269);
+});
+
+test("heavy aircraft drop equipment and only complete formations earn the bonus", () => {
+  for (const escaped of [0, 1]) {
+    const g = createGame();
+    g.wave = 4;
+    g.bossSpawned = true;
+    g.formations[0] = { count: 1 + escaped, kills: 0, escaped };
+    g.enemies = [
+      {
+        type: "tank",
+        x: 180,
+        y: 400,
+        hp: 1,
+        r: 17,
+        age: 0,
+        fire: 99,
+        speed: 0,
+        flash: 0,
+        waveId: 0,
+      },
+    ];
+    step(g, 0.2);
+    assert.equal(g.pickups.length, 1);
+    assert.equal(g.pickups[0].type, "weapon");
+    assert.equal(g.score, escaped ? 200 : 500);
+  }
 });

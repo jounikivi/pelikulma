@@ -39,6 +39,7 @@
           </div>
           <canvas
             id="canvas"
+            tabindex="0"
             width="720"
             height="1120"
             aria-label="Taivaskipinän lentokenttä. Liu'uta konetta, ampuminen on automaattista."
@@ -61,7 +62,10 @@
         <div class="power-row">
           <span id="weapon">ASE I</span><span id="wave">AALTO 0 / 4</span>
         </div>
-        <button id="pulse" class="primary" disabled>Pulssi valmis ✦</button>
+        <div class="ability-buttons">
+          <button id="roll" class="primary" disabled>Väistö 3/3 ↻</button
+          ><button id="pulse" disabled>Pulssi valmis ✦</button>
+        </div>
         <div
           class="energy"
           id="energy"
@@ -98,9 +102,9 @@
             <legend>Valitse vaikeustaso</legend>
             <div class="row">
               <button class="chip" data-d="easy" aria-pressed="false">
-                Rento<small>Hitaammat luodit</small></button
+                Rento<small>Kolme runkopistettä</small></button
               ><button class="chip on" data-d="normal" aria-pressed="true">
-                Normaali<small>Täysi lentoreitti</small></button
+                Normaali<small>Yksi osuma, yksi kone</small></button
               ><button class="chip" data-d="hard" aria-pressed="false">
                 Haaste<small>Tiheämpi tuli</small>
               </button>
@@ -113,12 +117,12 @@
             itse.
           </li>
           <li>
-            Kerää W-aseita, R-korjauksia ja E-energiaa. Valkoinen piste koneessa
-            on osuma-alueesi.
+            Kerää lisätykkejä, tulinopeutta, hajontaa ja kaksi siipikonetta.
+            Valkoinen piste koneessa on osuma-alueesi.
           </li>
           <li>
-            Pulssi torjuu lähiluodit ja vahingoittaa lähellä olevia vihollisia.
-            Kolme konetta, viisi aluetta ja viisi pomoa.
+            Kolme väistöä aluetta kohti suojaavat osumilta. Pulssi torjuu
+            lähiluodit. Kolme konetta, viisi aluetta ja viisi pomoa.
           </li>
         </ol>
         <div class="result" id="result" hidden>
@@ -136,12 +140,16 @@
         <label class="switch"
           >Äänet ja värinä<input type="checkbox" id="sound" checked
         /></label>
+        <label class="switch"
+          >Oma chiptune-taustamusiikki<input type="checkbox" id="music"
+        /></label>
         <details>
           <summary>Näppäimet ja kerättävät</summary>
           <p class="help">
-            Nuolet tai WASD: liike. Välilyönti tai X: pulssi. P tai Esc: tauko.
-            W parantaa asetta enintään tasolle III, R korjaa runkoa ja E lataa
-            pulssia. Täysi ase tai runko muuttaa kerättävän pisteiksi.
+            Nuolet tai WASD: liike. Välilyönti: väistö. X: pulssi. P tai Esc:
+            tauko. W: lisätykit, T: tulinopeus, H: hajonta, S: kaksi
+            siipikonetta. R korjaa runkoa ja E lataa pulssia. Täysi ase tai
+            runko muuttaa kerättävän pisteiksi.
           </p>
         </details>
         <a class="button-link" href="../../index.html"

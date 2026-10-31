@@ -63,10 +63,20 @@ Fysiikka käyttää pieniä osavaiheita, jotta nopea pallo ei hyppää palikan l
 
 Oma lentävien saarten maailma ja pikselispritet piirretään Canvasille tiedostossa `games/taivaskipina/game.js`. Pelisäännöt, viisi aluetta, vihollisaallot, pomojen erilaiset luotikuviot ja tallennuksen validointi ovat moduulissa `engine.js`. Grafiikka, kartat, nimet ja äänet ovat tämän projektin oma toteutus.
 
-Kampanjassa on viisi aluetta, neljä vihollisaaltoa aluetta kohti ja lopuksi pomokone. Vaikeustaso säätää luotinopeutta, ampumisväliä ja pistekerrointa. Aseessa on kolme tasoa, rungossa viisi osumapistettä ja koneita kolme. Uusi kone saa kolmen sekunnin suojan. Törmäysalue on pieni valkoinen piste; siivet eivät ole osuma-alue.
+Kampanjassa on viisi aluetta, neljä vihollisaaltoa aluetta kohti ja lopuksi pomokone. Vaikeustaso säätää luotinopeutta, ampumisväliä ja pistekerrointa. Aseen perustykeissä on kolme tasoa, koneita kolme ja aluekohtaisia väistöjä kolme. Normaali ja Haaste käyttävät yhden osuman koneita, Rento kolmea runkopistettä. Uusi kone saa kolmen sekunnin suojan. Törmäysalue on pieni valkoinen piste; siivet eivät ole osuma-alue.
 
 Pulssi vaatii 100 energiaa ja torjuu 190 yksikön säteellä olevat luodit. Se vahingoittaa lähivihollisia ja antaa lyhyen suojan. Energia palautuu ajan myötä ja tuhotuista koneista. Kerättävät W, R ja E parantavat asetta, korjaavat runkoa ja lataavat energiaa.
 
 Jatkopaikka tallentuu avaimella `taivaskipina-save` vain alueen alussa, jotta uudelleenlataus ei monista pisteitä. Tallennus sisältää vaikeuden, alueen, aloituspisteet, rungon, koneet, asetehon ja energian. `restore` hylkää virheelliset kentät ja tuntemattomat vaikeustasot. Tallennettu lento jatkuu alueen alusta. Häviö ja kampanjan läpäisy poistavat jatkopaikan. Eri vaikeuksilla on eri ennätysavaimet.
 
 `npm test` tarkistaa liikkeen, automaattisen ampumisen, suojan, kolmen koneen menettämisen, kerättävät, pulssin, tallennukset, viisi eri pomokuviota ja koko kampanjan etenemisen. Kampanjan etenemistestissä pilotti on haavoittumaton, joten se ei yksin arvioi vaikeustasojen ihmispelaajalle sopivaa tasapainoa.
+
+## Arcade-tuntuman päivitys
+
+Suunnittelun vertailukohta on käyttäjän antama [1942:n C64-kuvaus](https://www.c64-wiki.com/wiki/1942). Vertailusta poimittiin opeteltavat muodostelmat, palaavat hyökkäykset, rajattu suojattu väistö ja tulivoiman kerääminen.
+
+Toteutus käyttää omia reittejä, kenttiä, grafiikkaa ja sävelkuviota. `roll` aktivoituu välittömästi, suojaa 0,9 pelisekuntia ja kuluttaa yhden alueen kolmesta väistöstä. Se ei tuhoa vihollisia tai luoteja. Torjuntapulssi jää omaksi toiseksi erikoistoiminnoksi.
+
+`rapid`, `spread` ja `wingmen` täydentävät aiempaa `weapon`-tasoa. Täysi varustus tuottaa seitsemän ammuksen tuliseinän. Osuma normaaliin koneeseen kuluttaa koneen ja poistaa sivukoneet, hajonnan ja tulinopeuden sekä yhden tykkitason. Koneen vaihto suojaa hetken.
+
+Muodostelmien neljä reittiä ja ampumishetket ovat deterministisiä. Kevyet koneet tekevät yhden paluun ruudun alapuolelta, raskaat jatkavat pois. Kokonaan tuhottu muodostelma antaa vaikeuden pistekertoimella skaalatun bonuksen. Väistö, tulivoima ja paluureitit on katettu regressiotesteillä. Tallennusversio 2 sisältää uudet varusteet, väistöt ja varustekierron; versio 1 muunnetaan uusiin runkorajoihin.
